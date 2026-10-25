@@ -1,0 +1,1355 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OBS Lab — živé vysielanie a video produkcia | Odovzdávací systém s AI hodnotením</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/dist/tabler-icons.min.css">
+<style>
+:root{
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --color-text-primary: #1A1523;
+  --color-text-secondary: #6B7280;
+  --color-text-tertiary: #9C9BA8;
+  --color-background-primary: #FFFFFF;
+  --color-background-secondary: #F7F6FB;
+  --color-border-primary: #A9A3C7;
+  --color-border-secondary: #C9C5DE;
+  --color-border-tertiary: #E4E1F0;
+  --border-radius-md: 8px;
+  --border-radius-lg: 14px;
+}
+html,body{margin:0;padding:0;background:var(--color-background-secondary);}
+body{padding:1.5rem;max-width:1180px;margin:0 auto;}
+input,select,textarea,button{font-family:var(--font-sans);}
+input[type=text],select,textarea{
+  border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);
+  padding:8px 10px;color:var(--color-text-primary);background:var(--color-background-primary);
+}
+.school-line{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:.75rem}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+@media (max-width:720px){
+  body{padding:0.75rem;}
+  .two-col{grid-template-columns:1fr !important;}
+}
+
+/* --- databázové odovzdávanie + učiteľská tabuľka --- */
+input[type=password]{border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:8px 10px;color:var(--color-text-primary);background:var(--color-background-primary);font-size:14px;width:100%}
+.save-note{font-size:12px;margin-top:8px;padding:8px 10px;border-radius:var(--border-radius-md)}
+.sn-ok{background:#E1F5EE;color:#085041}.sn-warn{background:#FAEEDA;color:#854F0B}.sn-bad{background:#FCEBEB;color:#A32D2D}
+.mrow select.mrow-name{flex:1;width:auto;min-width:0}
+.t-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.t-bar select{max-width:260px}
+.t-login{max-width:360px;margin:30px auto;text-align:center}
+.t-login input{margin:10px 0}
+.mx-wrap{overflow-x:auto;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:var(--color-background-primary)}
+table.mx{border-collapse:collapse;width:100%;font-size:12.5px;min-width:760px}
+.mx th{font-size:10.5px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.04em;padding:8px 6px;border-bottom:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary)}
+.mx td{padding:5px 6px;border-bottom:0.5px solid var(--color-border-tertiary);text-align:center}
+.mx tr:last-child td{border-bottom:0}
+.mx .mx-n{width:28px;color:var(--color-text-secondary);font-size:11px}
+.mx .mx-name{text-align:left;white-space:nowrap;font-weight:500;padding-right:12px}
+.mx .mx-c{cursor:pointer;min-width:38px;font-weight:700}
+.mx .mx-c:hover{background:#EEEDFE}
+.mx .mx-none{color:#C9C5DE;font-weight:400}
+.mx .mx-pend{color:#BA7517}
+.mx .mx-sub{font-size:9px;font-weight:500;color:var(--color-text-secondary);display:block;line-height:1.1}
+.mx .mx-sum{color:var(--color-text-secondary);font-size:12px;font-weight:500}
+.cell-sub{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:10px 12px;margin-bottom:10px}
+.att-row{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:3px 0;border-bottom:0.5px dashed var(--color-border-tertiary)}
+.att-row:last-child{border-bottom:0}
+.ovr-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 12px;margin-top:6px}
+.hb{font-size:13.5px;line-height:1.6;color:var(--color-text-primary)}
+.hb h1{font-size:22px;margin:0 0 4px}.hb h2{font-size:17px;margin:26px 0 8px;padding-bottom:4px;border-bottom:2px solid #AFA9EC}.hb h3{font-size:15px;margin:20px 0 6px}.hb h4{font-size:13.5px;margin:12px 0 4px}
+.hb p{margin:0 0 8px}.hb ul,.hb ol{margin:0 0 10px;padding-left:20px}.hb li{margin-bottom:3px}
+.hb table{border-collapse:collapse;width:100%;margin:6px 0 12px;font-size:12.5px}.hb th,.hb td{border:0.5px solid var(--color-border-secondary);padding:5px 8px;text-align:left;vertical-align:top}.hb th{background:#EEEDFE;color:#26215C}
+.hb .hb-box{border-left:4px solid #1D9E75;background:#E1F5EE;padding:8px 12px;border-radius:6px;margin:8px 0 12px}.hb .hb-warn{border-left-color:#BA7517;background:#FAEEDA}
+.hb .hb-ex{border:0.5px solid var(--color-border-tertiary);border-radius:10px;padding:4px 14px 8px;margin:10px 0 18px}
+.hb img{max-width:100%;height:auto;border-radius:8px;border:0.5px solid var(--color-border-tertiary)}.hb figcaption{font-size:11.5px;color:var(--color-text-secondary);margin:3px 0 12px}.hb figure{margin:8px 0}
+.hb a{color:#0C447C}
+</style>
+</head>
+<body>
+
+
+<h2 class="sr-only">OBS Lab — systém odovzdávania cvičení s AI hodnotením pre výučbu živého vysielania a video produkcie v OBS Studio</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);color:var(--color-text-primary)}
+
+.hero-band{border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:1.5rem;border:0.5px solid #AFA9EC}
+.hero-top{background:#26215C;padding:1.5rem 1.5rem 0;display:grid;grid-template-columns:1fr 220px;gap:1rem;align-items:end}
+.hero-eyebrow{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#AFA9EC;margin-bottom:.5rem}
+.hero-h{font-size:22px;font-weight:500;color:#fff;line-height:1.3;margin-bottom:.5rem}
+.hero-p{font-size:13px;color:#CECBF6;line-height:1.6;margin-bottom:1rem}
+.hero-pills{display:flex;flex-wrap:wrap;gap:6px;padding-bottom:1.25rem}
+.hpill{font-size:11px;font-weight:500;padding:3px 10px;border-radius:99px;display:flex;align-items:center;gap:5px}
+.hpill-teal{background:#0F6E56;color:#9FE1CB}
+.hpill-purple{background:#534AB7;color:#EEEDFE}
+.hpill-amber{background:#633806;color:#FAC775}
+.hpill-book{background:#0C447C;color:#CFE6FB;text-decoration:none;cursor:pointer;transition:background .15s}
+.hpill-book:hover{background:#0F5A9E}
+
+.hero-stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-bottom:1.25rem;align-self:end}
+.hstat{background:#3C3489;border-radius:var(--border-radius-md);padding:10px 12px;text-align:center}
+.hstat-n{font-size:22px;font-weight:500;color:#fff}
+.hstat-l{font-size:11px;color:#AFA9EC;margin-top:2px}
+
+.hero-stripe{background:#534AB7;display:flex;align-items:center;gap:0;overflow:hidden}
+.stripe-item{flex:1;padding:8px 14px;display:flex;align-items:center;gap:8px;border-right:0.5px solid #3C3489;font-size:12px;color:#EEEDFE}
+.stripe-item:last-child{border-right:none}
+.stripe-item i{font-size:15px;color:#AFA9EC;flex-shrink:0}
+
+.tabs{display:flex;gap:2px;margin-bottom:1.25rem;background:var(--color-background-secondary);padding:3px;border-radius:var(--border-radius-md);width:fit-content}
+.tab-btn{font-size:13px;padding:7px 16px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-radius:6px;transition:all .15s;font-family:var(--font-sans);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.tab-btn:hover{color:var(--color-text-primary)}
+.tab-btn.active{background:var(--color-background-primary);color:var(--color-text-primary);font-weight:500;border:0.5px solid var(--color-border-tertiary)}
+
+.panel{display:none}.panel.active{display:block}
+.two-col{display:grid;grid-template-columns:225px 1fr;gap:1rem}
+
+.slab{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-secondary);padding:0 4px;margin-bottom:8px}
+
+.ex-item{padding:10px 12px;border-radius:var(--border-radius-md);cursor:pointer;border:0.5px solid transparent;transition:all .12s;margin-bottom:3px;display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:start}
+.ex-item:hover{background:var(--color-background-secondary)}
+.ex-item.sel{background:#EEEDFE;border-color:#AFA9EC}
+.ex-dot{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;margin-top:1px}
+.ex-info .ex-num{font-size:10px;font-weight:500;color:#534AB7;margin-bottom:1px}
+.ex-info .ex-name{font-size:13px;font-weight:500;color:var(--color-text-primary);line-height:1.35}
+.ex-badges{display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap}
+.badge{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;line-height:1.4}
+.bt{background:#E1F5EE;color:#085041}.bs{background:#EEEDFE;color:#3C3489}.bg{background:#EAF3DE;color:#27500A}
+
+.form-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+
+.form-hero-band{padding:0 0 0;background:#26215C;position:relative;overflow:hidden}
+.form-hero-inner{padding:1.25rem 1.5rem;position:relative;z-index:1}
+.fh-tag{font-size:10px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:#AFA9EC;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.fh-title{font-size:17px;font-weight:500;color:#fff;margin-bottom:4px;line-height:1.4}
+.fh-goal{font-size:14px;color:#CECBF6;line-height:1.55}
+.fh-kw{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.kw-pill{font-size:10px;padding:2px 8px;border-radius:99px;background:#3C3489;color:#CECBF6;border:0.5px solid #534AB7}
+
+.form-body{padding:1.25rem 1.5rem}
+
+.infobanner{display:flex;align-items:stretch;gap:0;margin-bottom:1.1rem;border-radius:var(--border-radius-md);overflow:hidden;border:0.5px solid var(--color-border-tertiary)}
+.infobanner-icon{width:44px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.infobanner-body{flex:1;padding:9px 12px;font-size:13px;line-height:1.5}
+.infobanner-body strong{font-weight:500}
+.ib-teal .infobanner-icon{background:#E1F5EE;color:#0F6E56}
+.ib-teal .infobanner-body{background:#E1F5EE;color:#085041}
+.ib-purple .infobanner-icon{background:#EEEDFE;color:#534AB7}
+.ib-purple .infobanner-body{background:#EEEDFE;color:#3C3489}
+.ib-amber .infobanner-icon{background:#FAEEDA;color:#BA7517}
+.ib-amber .infobanner-body{background:#FAEEDA;color:#633806}
+
+.mode-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1.1rem}
+.mode-btn{display:flex;align-items:center;gap:10px;padding:12px;border-radius:var(--border-radius-md);border:1.5px solid var(--color-border-secondary);cursor:pointer;background:var(--color-background-primary);transition:all .15s;font-family:var(--font-sans);text-align:left}
+.mode-btn:hover{border-color:var(--color-border-primary)}
+.mode-btn.sel-team{border-color:#1D9E75;background:#E1F5EE}
+.mode-btn.sel-solo{border-color:#534AB7;background:#EEEDFE}
+.mode-icon-wrap{width:36px;height:36px;border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.sel-team .mode-icon-wrap{background:#1D9E75;color:#E1F5EE}
+.sel-solo .mode-icon-wrap{background:#534AB7;color:#EEEDFE}
+.mode-btn:not(.sel-team):not(.sel-solo) .mode-icon-wrap{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.mode-txt{font-size:13px;font-weight:500;color:var(--color-text-primary)}
+.mode-sub{font-size:11px;color:var(--color-text-secondary)}
+.sel-team .mode-txt{color:#085041}
+.sel-solo .mode-txt{color:#3C3489}
+
+.field{margin-bottom:1rem}
+.field-label{font-size:12px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.field input[type=text],.field select,.field textarea{width:100%;font-family:var(--font-sans);font-size:14px}
+.field textarea{min-height:85px;resize:vertical}
+
+.members-grid{display:flex;flex-direction:column;gap:6px}
+.team-plan{border:0.5px solid #9FE1CB;background:#F3FBF7;border-radius:var(--border-radius-md);padding:11px 13px;margin-bottom:1rem}
+.team-plan-h{font-size:12px;font-weight:600;color:#085041;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.team-plan-row{display:grid;grid-template-columns:150px 1fr;gap:10px;padding:5px 0;border-top:0.5px solid #D3EFE3;font-size:12px;line-height:1.5}
+.team-plan-row:first-of-type{border-top:none}
+.team-plan-role{font-weight:600;color:#0F6E56}
+.team-plan-task{color:var(--color-text-primary)}
+.team-plan-note{font-size:11.5px;color:#085041;margin-top:8px;padding-top:7px;border-top:0.5px solid #D3EFE3}
+@media(max-width:560px){.team-plan-row{grid-template-columns:1fr;gap:2px}}
+.mrow{display:flex;gap:7px;align-items:center}
+.mrow input{flex:1}
+.mrow select{width:130px}
+.mrm{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);background:transparent;cursor:pointer;color:var(--color-text-secondary);font-size:14px;transition:all .12s;font-family:var(--font-sans)}
+.mrm:hover{background:#FCEBEB;color:#791F1F;border-color:#F09595}
+.add-m{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--color-text-secondary);border:0.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:7px 12px;cursor:pointer;background:transparent;font-family:var(--font-sans);transition:all .12s;width:100%;margin-top:4px}
+.add-m:hover{background:var(--color-background-secondary);color:var(--color-text-primary)}
+
+.checklist{display:flex;flex-direction:column;gap:5px}
+.ck-item{display:flex;align-items:flex-start;gap:9px;padding:9px 11px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);font-size:13px;cursor:pointer;border:0.5px solid transparent;transition:all .1s;line-height:1.5}
+.ck-item:hover{border-color:var(--color-border-tertiary)}
+.ck-item.ck{background:#EEEDFE;border-color:#AFA9EC}
+.ck-item.ck span{color:#3C3489}
+.ck-item input[type=checkbox]{margin-top:1px;flex-shrink:0;cursor:pointer}
+
+.ck-progress{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ck-bar-bg{flex:1;height:4px;background:var(--color-background-secondary);border-radius:2px;overflow:hidden}
+.ck-bar-fill{height:100%;background:#534AB7;border-radius:2px;transition:width .3s ease}
+.ck-label{font-size:11px;color:var(--color-text-secondary);flex-shrink:0;min-width:35px;text-align:right}
+
+.upload-zone{border:1.5px dashed var(--color-border-secondary);border-radius:var(--border-radius-md);padding:1.25rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--color-background-secondary)}
+.upload-zone:hover{border-color:#534AB7;background:#EEEDFE}
+.uz-icon{font-size:22px;color:var(--color-text-secondary);display:block;margin-bottom:6px}
+.uz-t{font-size:13px;color:var(--color-text-secondary)}
+.uz-h{font-size:11px;color:var(--color-text-tertiary);margin-top:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.chip{display:flex;align-items:center;gap:5px;padding:3px 9px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:99px;font-size:11px;color:var(--color-text-secondary)}
+.chip-x{cursor:pointer;color:var(--color-text-tertiary);font-size:13px;line-height:1}
+.chip-x:hover{color:#E24B4A}
+
+.btn-row{display:flex;gap:8px;margin-top:1.1rem}
+.btn-p{background:#534AB7;color:#fff;border:none;padding:10px 22px;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-sans);transition:background .15s;display:flex;align-items:center;gap:7px}
+.btn-p:hover{background:#3C3489}
+.btn-p:disabled{background:var(--color-border-secondary);color:var(--color-text-secondary);cursor:not-allowed}
+.btn-s{background:transparent;border:0.5px solid var(--color-border-secondary);padding:10px 18px;border-radius:var(--border-radius-md);font-size:13px;color:var(--color-text-secondary);cursor:pointer;font-family:var(--font-sans);transition:background .15s}
+.btn-s:hover{background:var(--color-background-secondary)}
+
+.spin{width:15px;height:15px;border:2px solid #AFA9EC;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.eval-load{display:flex;align-items:center;gap:10px;padding:12px 14px;background:#EEEDFE;border-radius:var(--border-radius-md);margin-top:1rem;font-size:13px;color:#3C3489}
+
+.result-wrap{margin-top:1rem;border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden}
+.result-top{display:flex;align-items:center;gap:14px;padding:1rem 1.25rem;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+.gc{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:500;flex-shrink:0}
+.g1{background:#EAF3DE;color:#27500A}.g2{background:#E6F1FB;color:#0C447C}.g3{background:#FAEEDA;color:#633806}.g4{background:#FAECE7;color:#712B13}.g5{background:#FCEBEB;color:#791F1F}
+.rm h3{font-size:15px;font-weight:500;margin-bottom:2px}.rm p{font-size:12px;color:var(--color-text-secondary)}
+.rb{padding:1.1rem 1.25rem}
+.rs{margin-bottom:.9rem}
+.rst{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-secondary);margin-bottom:6px}
+.rs p{font-size:14px;color:var(--color-text-primary);line-height:1.6}
+.rs-g p{color:#085041}.rs-r p{color:#712B13}
+
+.crit-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.cl{font-size:12px;color:var(--color-text-secondary);width:145px;flex-shrink:0}
+.cb{flex:1;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden}
+.cf{height:100%;border-radius:3px;transition:width .6s ease}
+.cn{font-size:11px;font-weight:500;color:var(--color-text-primary);width:32px;text-align:right;flex-shrink:0}
+
+.ov-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:6px}
+.ov-n{font-size:11px;font-weight:500;color:#534AB7;width:20px;flex-shrink:0;text-align:right}
+.ov-name{font-size:13px;color:var(--color-text-primary);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ov-bw{width:130px;height:5px;background:var(--color-background-secondary);border-radius:3px;overflow:hidden;flex-shrink:0}
+.ov-bf{height:100%;background:#534AB7;border-radius:3px;transition:width .5s ease}
+.ov-pts{font-size:12px;color:var(--color-text-secondary);width:60px;text-align:right;flex-shrink:0}
+
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px}
+.slbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:4px}
+.sval{font-size:22px;font-weight:500;color:var(--color-text-primary)}
+.sval.g{color:#27500A}.sval.r{color:#791F1F}
+
+.teacher-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.teacher-table th{font-size:10px;font-weight:500;letter-spacing:.07em;text-transform:uppercase;color:var(--color-text-secondary);padding:9px 12px;border-bottom:0.5px solid var(--color-border-tertiary);text-align:left}
+.teacher-table td{font-size:13px;padding:10px 12px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle}
+.teacher-table tr:last-child td{border-bottom:none}
+.teacher-table tr:hover td{background:var(--color-background-secondary)}
+.gp{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500}
+.see-btn{font-size:11px;padding:4px 10px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:transparent;cursor:pointer;color:var(--color-text-secondary);font-family:var(--font-sans)}
+.see-btn:hover{background:var(--color-background-secondary)}
+
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--color-text-secondary);font-size:13px}
+.empty i{font-size:28px;display:block;margin-bottom:10px;color:var(--color-text-tertiary)}
+
+.hint-box{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:2rem;text-align:center;color:var(--color-text-secondary);font-size:13px}
+.hint-box i{font-size:26px;display:block;margin-bottom:10px;color:var(--color-text-tertiary)}
+
+.or-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--color-background-secondary);border-top:0.5px solid var(--color-border-tertiary);font-size:12px}
+.or-row label{color:var(--color-text-secondary)}
+.or-row select{width:auto;font-size:12px}
+.sg-btn{font-size:12px;padding:5px 13px;background:#534AB7;color:#fff;border:none;border-radius:var(--border-radius-md);cursor:pointer;font-family:var(--font-sans)}
+
+.avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.fi{animation:fadeIn .25s ease}
+
+.criteria-infographic{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:1rem}
+
+.tut-wrap{border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);margin-bottom:1.1rem;overflow:hidden}
+.tut-toggle{width:100%;display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--color-background-secondary);border:none;cursor:pointer;font-family:var(--font-sans);text-align:left}
+.tut-toggle:hover{background:#EEEDFE}
+.tut-toggle-title{font-size:14px;font-weight:500;color:#3C3489;flex:1}
+.tut-toggle i.chev{font-size:14px;color:#534AB7;transition:transform .15s}
+.tut-toggle.open i.chev{transform:rotate(90deg)}
+.tut-body{display:none;padding:14px 16px;background:var(--color-background-primary)}
+.tut-body.open{display:block}
+.tut-theory{font-size:14px;line-height:1.68;color:var(--color-text-primary);margin-bottom:12px;padding-bottom:12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.tut-img-wrap{margin-bottom:14px}
+.tut-img{width:100%;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);display:block}
+.tut-img-cap{font-size:12px;color:var(--color-text-secondary);font-style:italic;margin-top:6px;line-height:1.5}
+.tut-links{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.tut-links .tut-book-link{margin-top:0}
+.tut-book-link{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-size:12px;font-weight:500;color:#0C447C;text-decoration:none;padding:7px 12px;background:#E6F1FB;border-radius:var(--border-radius-md);border:0.5px solid #B7D8F2;transition:background .15s}
+.tut-book-link:hover{background:#D3E9FA}
+.tut-steps{display:flex;flex-direction:column;gap:8px}
+.tut-step{display:flex;gap:9px;align-items:baseline;font-size:14px;line-height:1.55}
+.tut-step-n{font-weight:500;color:#534AB7;flex-shrink:0;min-width:28px}
+.ci-card{border-radius:var(--border-radius-md);padding:10px 12px;text-align:center;border:0.5px solid transparent}
+.ci-icon{font-size:20px;margin-bottom:5px;display:block}
+.ci-name{font-size:12px;font-weight:500;line-height:1.3;margin-bottom:2px}
+.ci-pts{font-size:14px;font-weight:500}
+.shot-req{background:#F0F7FF;border:0.5px solid #BFDBFE;border-radius:var(--border-radius-md);padding:12px 14px;margin-bottom:10px}
+.shot-req-h{font-size:12px;font-weight:600;color:#1E3A5F;display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.shot-req ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+.shot-req li{font-size:11.5px;line-height:1.5;color:var(--color-text-primary)}
+.shot-req li strong{color:#1E3A5F}
+.shot-req-btn{margin-top:9px;background:#FFF;color:#1E3A5F;border:1px solid #BFDBFE;padding:6px 12px;border-radius:8px;font-size:11.5px;font-weight:500;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-family:var(--font-sans);transition:all .12s}
+.shot-req-btn:hover{background:#E0EDFF;}
+.ex-card{border-radius:var(--border-radius-md);padding:12px 14px;margin-bottom:12px}
+.ex-bad{background:#FDF2F2;border:0.5px solid #F3C6C6}
+.ex-good{background:#EFFBF6;border:0.5px solid #9FE1CB}
+.ex-h{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.ex-bad .ex-h{color:#B4232A}
+.ex-good .ex-h{color:#0F6E56}
+.ex-card p{font-size:12px;line-height:1.55;margin:0 0 6px;color:var(--color-text-primary)}
+.ex-card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px}
+.ex-card li{font-size:11.5px;line-height:1.5;color:var(--color-text-primary)}
+.ex-tag{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:99px;margin-right:5px;margin-bottom:5px}
+.ex-bad .ex-tag{background:#F3C6C6;color:#7A1319}
+.ex-good .ex-tag{background:#9FE1CB;color:#0B4A3B}
+.teacher-io-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.ex-modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:99;padding:1.5rem}
+.ex-modal.active{display:flex}
+.ex-modal-card{background:var(--color-background-primary);border-radius:var(--border-radius-lg);max-width:640px;width:100%;max-height:85vh;overflow-y:auto}
+.ex-modal-top{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#26215C;border-radius:var(--border-radius-lg) var(--border-radius-lg) 0 0;position:sticky;top:0;}
+.ex-modal-title{color:#fff;font-size:14px;font-weight:500;display:flex;align-items:center;gap:6px}
+.ex-modal-close{background:transparent;border:none;color:#CECBF6;font-size:20px;cursor:pointer;line-height:1;}
+.ex-modal-body{padding:16px 18px;}
+</style>
+
+<div>
+
+<div class="hero-band">
+  <div class="hero-top">
+    <div>
+      <div class="hero-eyebrow">SPŠJM 2567 Multimédiá Ing. Tatiana Vráblová</div>
+      <div class="hero-eyebrow">OBS Lab · Živé vysielanie a video produkcia · OBS Studio</div>
+      <div class="hero-h">OBS Lab — od prvej scény po živé vysielanie</div>
+      <div class="hero-p">Každé cvičenie môžeš robiť samostatne alebo v tíme (2–4 členovia) s automatickým AI hodnotením.<br>Odovzdávanie prác, screenshoty, videá a klasifikácia 1–5.</div>
+      <div class="hero-pills">
+        <span class="hpill hpill-teal"><i class="ti ti-users" style="font-size:11px;" aria-hidden="true"></i>Každé cvičenie aj tímovo</span>
+        <span class="hpill hpill-purple"><i class="ti ti-user" style="font-size:11px;" aria-hidden="true"></i>Individuálne</span>
+        <span class="hpill hpill-amber"><i class="ti ti-sparkles" style="font-size:11px;" aria-hidden="true"></i>AI klasifikácia 1–5</span>
+        <span class="hpill hpill-purple"><i class="ti ti-school" style="font-size:11px;" aria-hidden="true"></i>Učiteľský prehľad</span>
+        <a href="./OBS_Lab_Ucebnica.pdf" target="_blank" rel="noopener" class="hpill hpill-book"><i class="ti ti-book-2" style="font-size:11px;" aria-hidden="true"></i>Celá učebnica (PDF)</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-n">10</div><div class="hstat-l">cvičení</div></div>
+      <div class="hstat"><div class="hstat-n">10</div><div class="hstat-l">aj tímovo</div></div>
+      <div class="hstat"><div class="hstat-n">2–4</div><div class="hstat-l">členov tímu</div></div>
+      <div class="hstat"><div class="hstat-n">AI</div><div class="hstat-l">hodnotenie</div></div>
+    </div>
+  </div>
+  <div class="hero-stripe">
+    <div class="stripe-item"><i class="ti ti-color-filter" aria-hidden="true"></i>Chroma Key</div>
+    <div class="stripe-item"><i class="ti ti-camera" aria-hidden="true"></i>Multi-cam</div>
+    <div class="stripe-item"><i class="ti ti-microphone-2" aria-hidden="true"></i>Audio DSP</div>
+    <div class="stripe-item"><i class="ti ti-network" aria-hidden="true"></i>NDI</div>
+    <div class="stripe-item"><i class="ti ti-broadcast" aria-hidden="true"></i>Vzdialení hostia</div>
+  </div>
+</div>
+
+<div class="tabs" role="tablist">
+  <button class="tab-btn active" onclick="switchTab('student')" role="tab"><i class="ti ti-user" style="font-size:13px;" aria-hidden="true"></i>Odovzdať prácu</button>
+  <button class="tab-btn" onclick="switchTab('teacher')" role="tab"><i class="ti ti-school" style="font-size:13px;" aria-hidden="true"></i>Učiteľský prehľad</button>
+  <button class="tab-btn" onclick="switchTab('overview')" role="tab"><i class="ti ti-chart-bar" style="font-size:13px;" aria-hidden="true"></i>Štatistiky</button>
+</div>
+
+<div id="panel-student" class="panel active">
+  <div class="two-col">
+    <div>
+      <div class="slab">Cvičenia</div>
+      <div id="sidebar"></div>
+    </div>
+    <div id="main-area">
+      <div class="hint-box"><i class="ti ti-hand-click" aria-hidden="true"></i>Vyber cvičenie zo zoznamu a odovzdaj prácu</div>
+    </div>
+  </div>
+</div>
+
+<div id="panel-teacher" class="panel">
+  <div id="t-root"></div>
+</div>
+
+<div class="ex-modal" id="cls-modal">
+  <div class="ex-modal-card" style="max-width:560px;">
+    <div class="ex-modal-top">
+      <div class="ex-modal-title" id="cls-title">Nová trieda</div>
+      <button class="ex-modal-close" onclick="closeClassDialog()" aria-label="Zavrieť">&times;</button>
+    </div>
+    <div class="ex-modal-body">
+      <div class="field"><div class="field-label">Názov triedy / školský rok</div>
+        <input type="text" id="cls-name" placeholder="napr. 4.A 2026/27" maxlength="60"></div>
+      <div class="field"><div class="field-label">Zoznam žiakov — jeden na riadok (max. 40) <span id="cls-count" style="font-weight:400;"></span></div>
+        <textarea id="cls-lines" rows="14" style="min-height:260px;" oninput="updateClassCount()" placeholder="Novák Ján&#10;Kováčová Eva&#10;…"></textarea>
+        <div id="cls-hint" style="font-size:11.5px;color:var(--color-text-secondary);margin-top:4px;"></div></div>
+      <label id="cls-active-wrap" style="display:flex;gap:7px;font-size:13px;align-items:center;cursor:pointer;margin-bottom:6px;"><input type="checkbox" id="cls-active" checked> Nastaviť ako aktívnu triedu (platí pre ostatné projekty; žiaci OBS Lab sa prihlasujú kódom triedy)</label>
+      <div class="btn-row" style="justify-content:flex-end;">
+        <button type="button" class="btn-s" id="cls-del" onclick="deleteClassDialog()" style="display:none;margin-right:auto;"><i class="ti ti-trash"></i> Zmazať triedu</button>
+        <button type="button" class="btn-s" onclick="closeClassDialog()">Zrušiť</button>
+        <button type="button" class="btn-p" onclick="saveClassDialog()"><i class="ti ti-device-floppy"></i> Uložiť</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ex-modal" id="hb-modal">
+  <div class="ex-modal-card" style="max-width:920px;">
+    <div class="ex-modal-top">
+      <div class="ex-modal-title"><i class="ti ti-book-2"></i> Metodická príručka pre učiteľa — OBS Lab</div>
+      <div style="display:flex;gap:12px;align-items:center;">
+        <button type="button" class="btn-s" style="padding:5px 12px;font-size:12px;" onclick="printHandbook()"><i class="ti ti-printer"></i> Tlačiť / uložiť ako PDF</button>
+        <button class="ex-modal-close" onclick="closeHandbook()" aria-label="Zavrieť">&times;</button>
+      </div>
+    </div>
+    <div class="ex-modal-body"><div id="hb-body" class="hb"><div class="empty"><i class="ti ti-loader"></i>Načítavam…</div></div></div>
+  </div>
+</div>
+
+<div class="ex-modal" id="d-modal">
+  <div class="ex-modal-card">
+    <div class="ex-modal-top">
+      <div class="ex-modal-title" id="d-title"></div>
+      <button class="ex-modal-close" onclick="closeD()" aria-label="Zavrieť">&times;</button>
+    </div>
+    <div class="ex-modal-body" id="d-body"></div>
+  </div>
+</div>
+
+<div class="ex-modal" id="example-modal">
+  <div class="ex-modal-card">
+    <div class="ex-modal-top">
+      <div class="ex-modal-title"><i class="ti ti-scale" aria-hidden="true"></i>Ukážka: zlé vs. dobré odovzdanie</div>
+      <button class="ex-modal-close" onclick="closeExample()" aria-label="Zavrieť">&times;</button>
+    </div>
+    <div class="ex-modal-body">
+      <div class="ex-card ex-bad">
+        <div class="ex-h"><i class="ti ti-x" aria-hidden="true"></i>Zlé odovzdanie (AI ho teraz odhalí a ohodnotí nízko)</div>
+        <span class="ex-tag">Nesúvisiaci screenshot</span>
+        <span class="ex-tag">Odpísaný komentár</span>
+        <span class="ex-tag">Nepravdivý checklist</span>
+        <p><strong>Čo urobí žiak:</strong> Priloží screenshot z úplne iného cvičenia (napr. náhodný záber namiesto okna výstupu), do komentára odpíše všeobecnú vetu bez konkrétnych hodnôt a zaškrtne si celý Selfcheck, hoci časť z neho v skutočnosti nesplnil.</p>
+        <p><strong>Prečo to nefunguje:</strong></p>
+        <ul>
+          <li>AI porovnáva obsah screenshotu so zadaním cvičenia — nesúvisiaci obrázok spozná.</li>
+          <li>Všeobecný komentár bez konkrétnych čísel a nastavení pôsobí ako nepodložené tvrdenie.</li>
+          <li>Video bez komentára sa berie len ako formálny dôkaz, nie ako potvrdenie kvality — AI videá neprehráva.</li>
+        </ul>
+        <p><strong>Výsledok:</strong> nízke skóre, známka 4–5, konkrétny zoznam toho, čo treba doložiť nanovo.</p>
+      </div>
+      <div class="ex-card ex-good">
+        <div class="ex-h"><i class="ti ti-check" aria-hidden="true"></i>Dobré odovzdanie (takto sa získa vysoké skóre)</div>
+        <span class="ex-tag">Relevantný screenshot</span>
+        <span class="ex-tag">Vlastné pozorovania</span>
+        <span class="ex-tag">Čestný checklist</span>
+        <p><strong>Čo urobí žiak:</strong> Priloží ostrý screenshot presne toho, čo sa v cvičení nastavovalo (napr. okno Nastavenia → Výstup v OBS s viditeľným enkodérom a bitrate, alebo panel Filtre s poradím audio filtrov), do komentára napíše vlastnými slovami konkrétne hodnoty a postup a Selfcheck zaškrtne presne podľa toho, čo naozaj urobil.</p>
+        <p><strong>Prečo to funguje:</strong></p>
+        <ul>
+          <li>Screenshot reálne dokazuje to, čo checklist tvrdí.</li>
+          <li>Komentár je konkrétny a vecne súvisí s tým, čo je na obrázku vidno.</li>
+          <li>Selfcheck zodpovedá realite, aj keď nie je 100 % kompletný — čestnosť sa nepenalizuje viac než nesplnený bod samotný.</li>
+        </ul>
+        <p><strong>Výsledok:</strong> vysoké skóre zodpovedajúce reálne odvedenej práci, konštruktívna spätná väzba na ďalšie zlepšenie.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="panel-overview" class="panel">
+  <div class="stat-grid" id="ov-stats"></div>
+  <div class="slab" style="margin-bottom:10px;">Postup podľa cvičenia</div>
+  <div id="ov-bars"></div>
+</div>
+
+</div>
+
+<script>
+const CRIT=[{n:"Technická funkčnosť a stabilita",k:"tech",m:30},{n:"Kľúčovanie, svietenie, kompozícia",k:"key",m:25},{n:"Práca s audiom",k:"audio",m:20},{n:"Protokol a dokumentácia",k:"doc",m:25}];
+const BOOK='./OBS_Lab_Ucebnica.pdf';
+const BOOK_PAGES={glossary:24,sources:25,grading:2};
+const EX=[
+  {"id": 1, "title": "Dokonalé Chroma Key kľúčovanie a trojbodové svietenie", "short": "Chroma Key & svietenie", "goal": "Vytvor scénu s moderátorom pred zeleným plátnom — čisté vyrezanie postavy bez zeleného spillu a zubatých okrajov, so statickým pozadím štúdia.", "team": true, "defMode": "team", "roles": ["Osvetľovač", "Kameraman & Technik", "OBS Operátor", "Moderátor"], "plan": [{"r": "Osvetľovač", "t": "rovnomerne osvetlí plátno a nastaví svetlá Key, Fill a Backlight"}, {"r": "Kameraman & Technik", "t": "nastaví kameru na manuál (focus, clona, ISO, uzávierka ≥ 1/100 s) a pripojí ju cez capture kartu"}, {"r": "OBS Operátor", "t": "pridá zdroj kamery a vyladí filter Chroma Key (Similarity, Smoothness, Spill Reduction)"}, {"r": "Moderátor", "t": "stojí 1,5–2 m od plátna a pri pohybe overuje čistotu okrajov"}], "goalTeam": "Vytvorte scénu s moderátorom pred zeleným plátnom. Cieľom je čisté vyrezanie postavy bez „zelených duchov“ (spill) a bez zubatých okrajov, s dosadením statického pozadia štúdia.", "color": "#E1F5EE", "tc": "#085041", "ic": "ti-color-filter", "criteria": CRIT, "checklist": ["Moderátor umiestnený min. 1,5–2 m od zeleného plátna", "Plátno rovnomerne osvetlené bez záhybov a tieňov", "Trojbodové svietenie subjektu (Key, Fill, Backlight) nastavené", "Kamera na manuálnom nastavení (focus, clona, ISO, uzávierka ≥1/100 s)", "Chroma Key filter nastavený (Similarity, Smoothness, Spill Reduction) bez zelených okrajov"], "kw": ["Chroma Key", "Key light", "Fill light", "Backlight", "spill", "capture karta"], "ref": "Moderátor aspoň 1,5–2 m od plátna; plátno rovnomerne osvetlené bez záhybov a tieňov (kontrola zebrou alebo histogramom); Key light asi 45° od osi, Fill z opačnej strany s nižšou intenzitou, Backlight zozadu-zhora; kamera na manuáli (focus, clona, ISO, uzávierka aspoň 1/100 s); v OBS zdroj Zariadenie na zachytávanie videa → Filtre → Efektové filtre → Chroma Key, doladiť farbu kľúča, Similarity, Smoothness a Spill Reduction.", "tut": {"theory": "Chroma Key je technika, pri ktorej sa jedna farba (zvyčajne zelená alebo modrá) softvérovo odstráni z obrazu a nahradí sa iným pozadím. Funguje spoľahlivo len vtedy, ak je farba plátna čistá, rovnomerne osvetlená a dostatočne odlíšená od farieb subjektu (pokožka, oblečenie). Trojbodové svietenie subjektu (Key, Fill, Backlight) je nezávislé od osvetlenia samotného plátna — plátno potrebuje vlastné, úplne rovnomerné difúzne osvetlenie bez tieňov a záhybov, inak filter Chroma Key nebude fungovať spoľahlivo v celej ploche.", "imgs": [{"src": "./img/cv01-1.jpg", "cap": "Schéma 1.1 — Rozostavenie svetiel (Key, Fill, Backlight), plátna a technického reťazca kamera → capture karta → OBS PC."}], "steps": ["Umiestnite moderátora aspoň 1,5--2 m od zeleného plátna — kľúčová prevencia proti green spillu.", "Osvetlite samotné plátno vyhradenými svetlami tak, aby bolo úplne rovnomerné, bez záhybov a tieňov (kontrolujte cez zebru alebo histogram v kamere).", "Rozmiestnite trojbodové svietenie subjektu: Key light (45° od osi), Fill light (nižšia intenzita z druhej strany), Backlight (kontúra zozadu-zhora).", "Vypnite všetku automatiku kamery — nastavte manuálny focus, clonu, ISO a uzávierku minimálne 1/100 s.", "V OBS pridajte zdroj Zariadenie na zachytávanie videa, otvorte Filtre → Efektové filtre → Chroma Key.", "Doladenie: vyberte presnú zelenú farbu, jemne upravte Similarity a Smoothness; pri presakovaní farby na okrajoch pridajte Spill Reduction."], "page": 4, "chapter": 1}},
+  {"id": 2, "title": "Viackamerový živý strih s prechodmi (Multi-cam)", "short": "Multi-cam strih", "goal": "Nasnímaj diskusiu dvoch ľudí viacerými kamerami a vytvor živý strih v OBS s klávesovými skratkami a plynulým prechodom.", "team": true, "defMode": "team", "roles": ["Kameraman 1 — Celok", "Kameraman 2 — Detail", "OBS Strihač", "Režisér / Zvukár"], "plan": [{"r": "Kameraman 1 — Celok", "t": "nasníma celok oboch diskutujúcich"}, {"r": "Kameraman 2 — Detail", "t": "nasníma detail cez rameno (over-the-shoulder)"}, {"r": "OBS Strihač", "t": "vytvorí scény CAM 1 a CAM 2, nastaví klávesové skratky a prechod a strihá naživo"}, {"r": "Režisér / Zvukár", "t": "zjednotí kamery (farba, clona, expozícia), dáva pokyny a stráži zvuk"}], "goalTeam": "Nasnímajte diskusiu dvoch ľudí pomocou dvoch až troch kamier. Vytvorte dynamický živý strih v OBS pomocou klávesových skratiek vrátane stinger prechodu.", "color": "#EEEDFE", "tc": "#3C3489", "ic": "ti-camera", "criteria": CRIT, "checklist": ["Kamery zmatchované (rovnaká teplota farieb, clona, expozičný čas)", "Kamera 1 sníma celok, Kamera 2 sníma detail (over-the-shoulder)", "Vytvorené scény „CAM 1 – CELOK“ a „CAM 2 – DETAIL“ v OBS", "Klávesové skratky (Hotkeys) nastavené pre prepínanie scén", "Prechod nastavený na Fade (300 ms) alebo funkčný Stinger prechod"], "kw": ["multi-cam", "Hotkeys", "stinger", "fade", "capture karta", "over-the-shoulder"], "ref": "Kamery zmatchované (teplota farieb, clona, expozičný čas); Kamera 1 = celok, Kamera 2 = detail cez rameno; scény „CAM 1 — CELOK“ a „CAM 2 — DETAIL“ so zdrojmi cez capture kartu; klávesové skratky v Nastavenia → Klávesové skratky (napr. Numpad 1 a 2); prechod Prelínanie (Fade) 300 ms alebo funkčný Stinger; živý strih dlhý asi 3 minúty.", "tut": {"theory": "Viackamerový strih (multi-cam) prináša dynamiku do rozhovoru striedaním celkových a detailných záberov. Aby prepínanie pôsobilo profesionálne, musia byť kamery vopred „zmatchované“ — zjednotená teplota farieb, clona a expozičný čas — inak pri prepnutí diváka vizuálne vyruší skok v jase alebo farebnom podaní.", "imgs": [{"src": "./img/cv02-1.jpg", "cap": "Schéma 2.1 — Zapojenie dvoch kamier cez capture kartu do OBS PC a živý strih pomocou klávesových skratiek (Hotkeys)."}], "steps": ["Postavte kamery vedľa seba, namierte na kalibračnú tabuľku alebo biely papier a zjednoťte teplotu farieb, clonu a expozičný čas.", "Rozmiestnite kamery podľa rolí: Kamera 1 sníma celok oboch diskutujúcich, Kamera 2 sníma detail cez rameno.", "V OBS vytvorte scénu „CAM 1 -- CELOK“ a „CAM 2 -- DETAIL“, do každej vložte príslušné zariadenie cez capture kartu.", "V Nastavenia → Klávesové skratky priraďte prepínanie scén na jednoducho dostupné klávesy (napr. Numpad 1/2).", "Zmeňte prechod z „Strih“ na „Prelínanie“ (300 ms), prípadne pridajte vlastný Stinger prechod.", "Spustite nahrávanie a zrealizujte 3-minútový živý strih podľa pokynov režiséra."], "page": 6, "chapter": 2}},
+  {"id": 3, "title": "Pokročilý audio manažment, smerovanie a DSP filtre", "short": "Audio DSP", "goal": "Nastav čistý zvuk pre dvoch hovoriacich s rôznymi mikrofónmi — bez hluku ventilátora PC a bez clippingu.", "team": true, "defMode": "team", "roles": ["Zvukový majster", "OBS Audio Inžinier", "Asistent / Rečník"], "plan": [{"r": "Zvukový majster", "t": "nastaví Gain na mixpulte bez clippingu a zapojí mikrofóny"}, {"r": "OBS Audio Inžinier", "t": "pridá zachytávanie zvukového vstupu a nastaví reťazec filtrov"}, {"r": "Asistent / Rečník", "t": "hovorí pri skúškach a overuje, že zvuk neklipuje a šum je potlačený"}], "goalTeam": "Nastavte čistý zvuk pre dvoch moderátorov s rôznymi typmi mikrofónov. Eliminujte hluk z ventilátorov PC a zabezpečte, aby audio neklipovalo.", "color": "#FAEEDA", "tc": "#633806", "ic": "ti-microphone-2", "criteria": CRIT, "checklist": ["Gain na mixpulte nastavený tak, že najhlasnejšia reč nedosahuje clip (červená)", "Audio Input Capture pridaný v OBS, kanály správne nastavené (Mono ak treba)", "Filtre v správnom poradí: Noise Suppression → Noise Gate → Compressor → Limiter", "Noise Gate threshold nastavený tesne nad hladinu šumu, pod hladinu reči", "Limiter nastavený na Threshold -2.0 dB, zvuk nikde neklipuje"], "kw": ["Gain staging", "Noise Gate", "Compressor", "Limiter", "RNNoise", "clipping"], "ref": "Analógový Gain na mixpulte v pásme 0 až +3 dB bez červenej kontrolky Clip; zdroj Zachytávanie zvukového vstupu (USB rozhranie), Mono ak je zvuk rozdelený na L/R; filtre v poradí Noise Suppression (RNNoise) → Noise Gate → Compressor (pomer 3:1 alebo 4:1) → Limiter (prah −2,0 dB); prah Noise Gate tesne nad hladinou šumu a pod hladinou reči.", "tut": {"theory": "Kvalitný zvuk je v mnohých ohľadoch dôležitejší než obraz — diváci odpustia horšie osvetlenie, ale nekvalitný alebo skreslený zvuk je neprijateľný. Poradie audio filtrov v OBS je kľúčové: Noise Suppression odstráni konštantný šum (napr. ventilátor PC), Noise Gate zavrie mikrofón, keď sa nehovorí, Compressor vyrovná rozdiely v hlasitosti a Limiter je poslednou poistkou proti prekročeniu hranice a digitálnemu skresleniu (clippingu).", "imgs": [{"src": "./img/cv03-1.jpg", "cap": "Schéma 3.1 — Signálová cesta zvuku od mikrofónu cez mixpult po reťazec filtrov v OBS (Noise Suppression → Gate → Compressor → Limiter)."}], "steps": ["Pripojte mikrofóny do mixpultu, nastavte analógový Gain do pásma 0 až +3 dB bez toho, aby svietila červená (Clip) kontrolka.", "V OBS pridajte Zachytávanie zvukového vstupu a vyberte USB rozhranie; zaškrtnite Mono, ak je zvuk rozdelený do kanálov L/R.", "Otvorte Filtre vstupu a pridajte filter Noise Suppression (algoritmus RNNoise).", "Pridajte Noise Gate — prah otvorenia nastavte tesne nad hladinu šumu, ale pod hladinu bežnej reči.", "Pridajte Compressor s pomerom 3:1 alebo 4:1 na vyrovnanie dynamiky.", "Pridajte Limiter s prahom -2.0 dB ako poslednú poistku proti skresleniu."], "page": 8, "chapter": 3}},
+  {"id": 4, "title": "Obraz v obraze (PiP), zachytávanie obrazoviek a scéna pre webináre", "short": "PiP & Webinár", "goal": "Vytvor layout pre edukatívny tutoriál — zachytená obrazovka ako hlavný obsah, kamera v zaoblenom okienku a branding školy.", "team": true, "defMode": "team", "roles": ["Grafický dizajnér", "OBS Technik", "Lektor"], "plan": [{"r": "Grafický dizajnér", "t": "pripraví čiernobielu masku, rámček (PNG s alfa kanálom) a logo"}, {"r": "OBS Technik", "t": "zostaví scénu, zdroje a poradie vrstiev"}, {"r": "Lektor", "t": "prezentuje na zachytenej obrazovke a overuje čitateľnosť a polohu kamery"}], "goalTeam": "Vytvorte profesionálny layout pre edukatívny tutoriál — zachytenie plochy PC dominuje, v rohu je vyrezaný moderátor v zaoblenom okienku (PiP) s grafickým brandom školy.", "color": "#EEEDFE", "tc": "#3C3489", "ic": "ti-picture-in-picture", "criteria": CRIT, "checklist": ["Zdroj Zachytenie obrazovky pridaný pre monitor s výukou softvéru", "Kamera lektora pridaná, zmenšená a umiestnená do rohu", "Kruhová/tvarovaná maska aplikovaná cez Image Mask/Blend filter", "Grafický rámček a logo školy pridané ako Image zdroje", "Hierarchia vrstiev správna (logo, rámček, kamera, obrazovka odspodu)"], "kw": ["Picture-in-Picture", "Screen Capture", "Image Mask", "alfa kanál", "hierarchia vrstiev"], "ref": "Scéna „Webinár“ so zdrojom Zachytenie obrazovky; kamera lektora zmenšená do rohu; čiernobiela maska (biely kruh na čiernom) cez filter Image Mask/Blend; rámček (PNG s alfa kanálom) a logo školy ako Image zdroje; poradie vrstiev zhora: Logo → Rámček → Kamera (s maskou) → Zachytenie obrazovky.", "tut": {"theory": "Picture-in-Picture (PiP) kombinuje viacero video zdrojov v jednej scéne — typicky zachytenú obrazovku ako hlavný obsah a kameru lektora v menšom okienku. V OBS je kľúčová hierarchia vrstiev v paneli Zdroje: zdroje vyššie v zozname prekrývajú tie nižšie. Tvarovaná (napr. kruhová) maska sa vytvára pomocou čiernobieleho obrázka a filtra Image Mask/Blend — biela časť zostáva viditeľná, čierna sa stáva priehľadnou.", "imgs": [{"src": "./img/cv04-1.jpg", "cap": "Schéma 4.1 — Layout PiP scény: zachytená obrazovka ako pozadie, kamera lektora v zaoblenom okienku, grafický branding navrchu."}], "steps": ["Vytvorte scénu „Webinár“ a pridajte Zachytenie obrazovky pre monitor, na ktorom prebieha ukážka softvéru.", "Pridajte kameru lektora, zmenšite ju a umiestnite napr. do pravého dolného rohu scény.", "Pripravte čiernobiely obrázok masky (biely kruh na čiernom pozadí) a aplikujte naň filter Image Mask/Blend na zdroj kamery.", "Pridajte grafický rámček (PNG s alfa kanálom) a logo školy ako samostatné Image zdroje.", "Skontrolujte poradie vrstiev v paneli Zdroje: Logo → Rámček → Kamera (s maskou) → Zachytenie obrazovky (úplne dole)."], "page": 10, "chapter": 4}},
+  {"id": 5, "title": "Pokročilé virtuálne štúdio (Virtual Set) a digitálny pohyb kamery", "short": "Virtuálne štúdio", "goal": "Zaraď moderátora zo zeleného plátna do virtuálneho štúdia a simuluj pohyb kamery (zoom, švenk) cez Move Transition.", "team": true, "defMode": "team", "roles": ["Kameraman", "OBS VFX Operátor", "Režisér"], "plan": [{"r": "Kameraman", "t": "zaistí čistý záber na zelenom plátne podľa cvičenia 1"}, {"r": "OBS VFX Operátor", "t": "vytvorí scény STUDIO_CELOK a STUDIO_DETAIL, nastaví Move Transition a kontaktný tieň"}, {"r": "Režisér", "t": "určí kompozíciu podľa pravidla tretín a schváli plynulosť pohybu"}], "goalTeam": "Integrujte moderátora zo zeleného plátna do 2D/3D pozadia fiktívneho spravodajského štúdia. Simulujte pohyb kamery (švenk, zoom) softvérovo pomocou Move Transition.", "color": "#FAEEDA", "tc": "#633806", "ic": "ti-movie", "criteria": CRIT, "checklist": ["Dokonalé kľúčovanie moderátora na zelenom plátne (nadväzuje na cvičenie 1)", "Scéna „STUDIO_CELOK“ vytvorená s pozadím virtuálneho štúdia", "Scéna „STUDIO_DETAIL“ vytvorená so zväčšeným pozadím aj moderátorom", "Prechod medzi scénami nastavený (Move Transition alebo Fade 1200 ms)", "Kontaktný tieň pod moderátorom pridaný pre realistickú integráciu"], "kw": ["Virtual Set", "Move Transition", "pravidlo tretín", "kontaktný tieň"], "ref": "Dokonalé kľúčovanie z cvičenia 1; scéna STUDIO_CELOK s virtuálnym pozadím; duplikovaná scéna STUDIO_DETAIL so zväčšeným pozadím aj moderátorom a kompozíciou podľa pravidla tretín; prechod Move Transition alebo Fade 1200 ms; kontaktný tieň = polopriehľadný čierny ovál (PNG) pod nohami moderátora.", "tut": {"theory": "Virtuálne štúdio kombinuje Chroma Key kľúčovanie so statickými alebo animovanými pozadiami, aby vznikol dojem skutočného televízneho štúdia. Move Transition simuluje pohyb kamery (zoom, švenk) softvérovo aj pri fyzicky statickej kamere — OBS dopočíta plynulú dráhu pixelov medzi dvoma definovanými stavmi scény. Kontaktný tieň pod postavou je nevyhnutný, inak subjekt vizuálne „levituje“ nad virtuálnou podlahou.", "imgs": [{"src": "./img/cv05-1.jpg", "cap": "Schéma 5.1 — Dve scény (Celok štúdia / Detail rečníka) z jednej fyzickej kamery, prepojené cez Move Transition."}, {"src": "./img/cv05-2.jpg", "cap": "Schéma 5.2 — Alternatívne znázornenie prechodu medzi scénami Celok/Detail s pomerom veľkosti pozadia a moderátora."}], "steps": ["Nastavte dokonalé kľúčovanie moderátora na zelenom plátne (postup z kapitoly 1).", "Vytvorte scénu STUDIO_CELOK s pozadím virtuálneho štúdia a moderátorom umiestneným za virtuálny stôl.", "Duplikujte scénu ako STUDIO_DETAIL — zväčšite pozadie aj moderátora a posuňte kompozíciu podľa pravidla tretín.", "Nastavte plynulý prechod medzi scénami cez Move Transition (alebo klasický Fade 1200 ms).", "Pridajte polopriehľadný čierny ovál (PNG) pod nohy moderátora ako kontaktný tieň pre realistickú integráciu."], "page": 12, "chapter": 5}},
+  {"id": 6, "title": "Integrácia interaktívnej grafiky, titulkov (Lower Thirds) a Stinger prechodov", "short": "Titulky & Stinger", "goal": "Vytvor živé vysielanie s menovkami (Lower Thirds) a vlastným Stinger prechodom so zvukovým efektom.", "team": true, "defMode": "team", "roles": ["Motion Designer", "OBS Technik", "Operátor titulkov"], "plan": [{"r": "Motion Designer", "t": "pripraví WebM titulky a Stinger video s alfa kanálom"}, {"r": "OBS Technik", "t": "nastaví Media Source a Stinger prechod vrátane bodu strihu"}, {"r": "Operátor titulkov", "t": "spúšťa titulky a prechody naživo podľa scenára"}], "goalTeam": "Vytvorte živé vysielanie s dynamicky sa meniacimi menovkami rečníkov (Lower Thirds) a vlastným Stinger prechodom so zvukovým efektom.", "color": "#E1F5EE", "tc": "#085041", "ic": "ti-typography", "criteria": CRIT, "checklist": ["WebM titulok (Lower Third) pridaný ako Media Source s alfa kanálom", "Zaškrtnuté „Znovu spustiť prehrávanie, keď sa zdroj stane aktívnym“", "Stinger prechod nakonfigurovaný s WebM videom", "Presný Bod strihu nastavený v milisekundách (obrazovka úplne zakrytá)", "Zvuk Stingeru nastavený na Monitorovanie a výstup"], "kw": ["Lower Thirds", "Stinger", "WebM", "alfa kanál", "Bod strihu"], "ref": "Médiá (Media Source) s WebM titulkom s alfa kanálom a zaškrtnutým „Znovu spustiť prehrávanie, keď sa zdroj stane aktívnym“; prechod typu Stinger s WebM videom; Typ bodu strihu = Časový kód (milisekundy) nastavený na moment úplného zakrytia obrazovky; Smerovanie zvuku Stingeru = Monitorovanie a výstup.", "tut": {"theory": "Lower Thirds (spodné tretiny) sú animované grafické prvky s menom a funkciou rečníka, zvyčajne vo formáte WebM s alfa kanálom (priehľadnosťou pozadia). Stinger prechod je krátke video (napr. prelet loga), ktoré na presne určenú milisekundu — takzvaný „Bod strihu“ — úplne zakryje obrazovku. Práve v tom momente OBS prepne scénu na pozadí, čím vznikne dokonale skrytý, profesionálny strih.", "imgs": [{"src": "./img/cv06-1.jpg", "cap": "Schéma 6.1 — Lower Third titulok a Stinger prechod s vyznačeným Bodom strihu v scéne OBS."}], "steps": ["Pridajte zdroj Médiá (Media Source) s WebM titulkom a zaškrtnite „Znovu spustiť prehrávanie, keď sa zdroj stane aktívnym“.", "V nastaveniach Prechody medzi scénami kliknite „+“ a vyberte typ Stinger.", "Načítajte WebM video prechodu (napr. prelet loga školy).", "Zmeňte Typ bodu strihu na „Časový kód (milisekundy)“ a zistite presný moment úplného zakrytia obrazovky.", "Ak video obsahuje zvuk, nastavte Smerovanie zvuku na „Monitorovanie a výstup“, aby ho bolo počuť aj v streame."], "page": 14, "chapter": 6}},
+  {"id": 7, "title": "Súbežný lokálny záznam a live stream (Mastering Output Settings)", "short": "Output Settings", "goal": "Nastav súčasný live stream a lokálne nahrávanie vo vysokej kvalite s oddelenými audio stopami.", "team": true, "defMode": "team", "roles": ["Systémový inžinier", "Audio Smerovač", "QA / Kontrola kvality"], "plan": [{"r": "Systémový inžinier", "t": "nastaví Rozšírený režim výstupu, enkodéry a bitrate pre stream a záznam"}, {"r": "Audio Smerovač", "t": "priradí zdroje k audio stopám podľa plánovanej matice"}, {"r": "QA / Kontrola kvality", "t": "spustí záťažový test a sleduje Dropped frames v Štatistikách"}], "goalTeam": "Nastavte súčasné živé vysielanie (úsporný formát) a lokálne nahrávanie vo vysokej kvalite s oddelenými audio stopami pre postprodukciu.", "color": "#FAEEDA", "tc": "#633806", "ic": "ti-device-floppy", "criteria": CRIT, "checklist": ["Režim výstupu zmenený na „Rozšírené“ (Advanced)", "Streaming: hardvérový enkodér, CBR, 6000 kbps, len Audio stopa 1", "Recording: formát MKV, kvalitný enkodér (NVENC HEVC/AV1), CQP 18", "Matica zvuku nastavená podľa tabuľky (Mic 1/Mic 2/Hudba na správne stopy)", "Záťažový test bez „Dropped frames“ v paneli Štatistiky"], "kw": ["Advanced Output", "CBR", "CQP", "MKV", "dropped frames", "audio stopy"], "ref": "Režim výstupu Rozšírené; Streaming: hardvérový enkodér, CBR, 6000 kbps, len Audio stopa 1; Recording: formát MKV, kvalitný enkodér (napr. NVENC HEVC/AV1), CQP 18, audio stopy 1–3 podľa počtu zdrojov; zdroje priradené k stopám podľa matice (Mic 1, Mic 2, Hudba); záťažový test bez Dropped frames v paneli Štatistiky.", "tut": {"theory": "OBS umožňuje súčasne streamovať (nízka latencia, úsporný bitrate) a nahrávať lokálne vo vysokej kvalite pre postprodukciu — ide o dve nezávislé nastavenia enkodéra v Rozšírenom (Advanced) režime výstupu. CQP (Constant Quality) je vhodný pre nahrávanie, kde chceme maximálnu kvalitu bez ohľadu na veľkosť súboru; CBR (Constant Bitrate) je vhodný pre stabilný stream s predvídateľnou dátovou náročnosťou. Oddelené audio stopy umožňujú v postprodukcii dodatočne upraviť hlasitosť jednotlivých rečníkov.", "imgs": [{"src": "./img/cv07-1.jpg", "cap": "Schéma 7.1 — Súbežné vetvenie výstupu OBS: Streaming (CBR, nízka latencia) a Recording (CQP, vysoká kvalita, viac audio stôp)."}], "steps": ["V Nastavenia → Výstup zmeňte Režim výstupu na „Rozšírené“.", "Na karte Streaming nastavte hardvérový enkodér, CBR, bitrate 6000 kbps, zaškrtnite len Audio stopu 1.", "Na karte Recording nastavte formát MKV, kvalitný enkodér (napr. NVENC HEVC/AV1), CQP 18.", "V karte Recording zaškrtnite všetky potrebné audio stopy (1, 2, 3 podľa počtu zdrojov).", "V Rozšírených vlastnostiach zvuku priraďte jednotlivé zdroje k stopám podľa plánovanej matice.", "Spustite súčasne Streamovanie aj Nahrávanie a počas testu sledujte panel Štatistiky, či sa neobjavujú Dropped frames."], "page": 16, "chapter": 7}},
+  {"id": 8, "title": "Sieťový prenos videa cez NDI (Network Device Interface)", "short": "NDI sieť", "goal": "Prepoj dve pracoviská cez lokálnu sieť LAN pomocou NDI — bez HDMI/SDI káblov.", "team": true, "defMode": "team", "roles": ["Sieťový technik", "Operátor PC 1 — Zdroj", "Operátor PC 2 — Réžia"], "plan": [{"r": "Sieťový technik", "t": "nastaví statické IP, overí ping a zapojenie cez Gigabit switch"}, {"r": "Operátor PC 1 — Zdroj", "t": "zapne NDI Output a pomenuje zdroj"}, {"r": "Operátor PC 2 — Réžia", "t": "pridá NDI Source, vyberie zdroj a otestuje Latency Mode"}], "goalTeam": "Prepojte dve nezávislé režijné pracoviská cez lokálnu sieť LAN bez HDMI/SDI káblov pomocou NDI protokolu.", "color": "#EEEDFE", "tc": "#3C3489", "ic": "ti-network", "criteria": CRIT, "checklist": ["Obe PC majú statické IP adresy v rovnakej podsieti, ping funguje", "NDI Output zapnutý na PC 1 (Main Output, pomenovaný zdroj)", "NDI Source pridaný a spárovaný na PC 2", "Latency Mode otestovaný (Low/Normal) podľa stability siete", "Zapojenie výhradne cez LAN (Cat5e/Cat6), Wi-Fi nepoužité"], "kw": ["NDI", "LAN", "statická IP", "Gigabit Switch", "latencia"], "ref": "Obe PC so statickou IP v rovnakej podsieti a funkčným pingom; PC 1: Nástroje → NDI Output Settings, zapnutý Main Output s názvom; PC 2: zdroj NDI Source s vybraným názvom v Source name; Latency Mode Low (Experimental), pri stratách paketov Normal (Safe); zapojenie výhradne káblom LAN cez Gigabit switch, nie Wi-Fi.", "tut": {"theory": "NDI (Network Device Interface) umožňuje prenos videa a zvuku vo vysokej kvalite cez bežnú počítačovú sieť (LAN) bez potreby HDMI/SDI káblov medzi jednotlivými pracoviskami. Technológia vyžaduje stabilnú, rýchlu sieť — preto sa pre produkčné použitie odporúča výhradne káblové pripojenie cez Gigabitový switch, keďže Wi-Fi zvyčajne nemá dostatočnú a stabilnú priepustnosť.", "imgs": [{"src": "./img/cv08-1.jpg", "cap": "Schéma 8.1 — Topológia siete: PC 1 (vysielač NDI) → Gigabit Switch → PC 2 (prijímač/réžia) → finálny stream na internet."}], "steps": ["Priraďte obom PC statické IP adresy v rovnakej podsieti a overte spojenie príkazom ping.", "Na PC 1 (vysielač) v OBS choďte do Nástroje → NDI Output Settings, zapnite Main Output a pomenujte ho.", "Na PC 2 (réžia) pridajte v scéne nový zdroj NDI Source.", "V nastaveniach zdroja vyberte názov zdroja PC 1 zo zoznamu Source name.", "Nastavte Latency Mode na Low (Experimental); pri stratách paketov prepnite na Normal (Safe)."], "page": 18, "chapter": 8}},
+  {"id": 9, "title": "OBS ako virtuálna kamera a prepojenie s telekonferenciami (Zoom/Teams)", "short": "Virtuálna kamera", "goal": "Nastav OBS ako virtuálnu kameru a zvuk pre videohovor v Teams alebo Zoom — s introm, outrom a správne zmixovaným zvukom.", "team": true, "defMode": "team", "roles": ["OBS Réžisér", "Audio Smerovač", "Vzdialený testovač"], "plan": [{"r": "OBS Réžisér", "t": "vytvorí scény Intro, Live a Outro a spustí virtuálnu kameru"}, {"r": "Audio Smerovač", "t": "nastaví monitorovanie na virtuálny audio kábel a mikrofón v Zoome/Teams"}, {"r": "Vzdialený testovač", "t": "pripojí sa do hovoru a potvrdí obraz aj zvuk"}], "goalTeam": "Nastavte OBS ako kompletnú externú réžiu pre videohovor v MS Teams alebo Zoom — s profesionálnym brandingom, odpočítavaním a správne zmixovaným zvukom.", "color": "#E1F5EE", "tc": "#085041", "ic": "ti-camera-selfie", "criteria": CRIT, "checklist": ["Scény Intro/Live/Outro pripravené v OBS", "Virtuálna kamera spustená (Start Virtual Camera)", "OBS Virtual Camera vybraná ako kamera v Zoome/Teams", "Zariadenie na monitorovanie zvuku nastavené na Virtual Audio Cable", "Mikrofón v Zoome nastavený na CABLE Output, High Fidelity Music Mode zapnutý"], "kw": ["Virtual Camera", "VB-Audio Virtual Cable", "monitorovanie zvuku", "branding"], "ref": "Scény Intro (video slučka, text, hudba), Live (kamera, mikrofón, prezentácia), Outro; Spustiť virtuálnu kameru; v Zoome/Teams kamera OBS Virtual Camera; Nastavenia → Zvuk → Rozšírené → Zariadenie na monitorovanie = CABLE Input; zdroje Mikrofón a Hudba na Monitorovanie a výstup; v Zoome mikrofón CABLE Output a zapnutý High Fidelity Music Mode.", "tut": {"theory": "Funkcia Start Virtual Camera prezentuje OBS operačnému systému ako bežnú webkameru — účastníci videohovoru tak vidia presne to, čo vysiela réžia, vrátane prechodov, titulkov a grafiky. Prenos zvuku je zložitejší: keďže Zoom/Teams nevie priamo prijímať zvuk priamo z OBS, používa sa virtuálny audio kábel (napr. VB-Audio Virtual Cable), ktorý presmeruje zvuk z OBS do mikrofónového vstupu komunikačného softvéru.", "imgs": [{"src": "./img/cv09-1.jpg", "cap": "Schéma 9.1 — Kompletná architektúra prepojenia OBS s telekonferenciou (virtuálna kamera + virtuálny audio kábel)."}], "steps": ["V OBS vytvorte 3 scény: „Intro“ (video slučka + text + hudba), „Live“ (kamera, mikrofón, prezentácia), „Outro“ (poďakovanie).", "V pravom dolnom paneli OBS kliknite Spustiť virtuálnu kameru.", "V Zoome/Teams v Nastaveniach videa vyberte OBS Virtual Camera.", "V OBS: Nastavenia → Zvuk → Rozšírené → Zariadenie na monitorovanie nastavte na CABLE Input.", "Pri zdrojoch Mikrofón a Hudba prepnite režim monitorovania na „Monitorovanie a výstup“.", "V Zoome vyberte mikrofón CABLE Output a zapnite High Fidelity Music Mode, aby sa nevymazala podmazová hudba."], "page": 20, "chapter": 9}},
+  {"id": 10, "title": "Integrácia vzdialených hostí cez VDO.ninja (WebRTC)", "short": "VDO.ninja hosť", "goal": "Zrealizuj talk-show s hosťom pripojeným na diaľku cez VDO.ninja — bez ozveny v zvuku (Mix-Minus).", "team": true, "defMode": "team", "roles": ["OBS Producent", "Hosť", "Zvukový inžinier"], "plan": [{"r": "OBS Producent", "t": "vytvorí miestnosť na VDO.ninja, pridá Browser Source a zostaví split-screen"}, {"r": "Hosť", "t": "pripojí sa cez smartfón a povolí kameru a mikrofón"}, {"r": "Zvukový inžinier", "t": "nastaví smerovanie audia a Mix-Minus, aby hosť nepočul sám seba"}], "goalTeam": "Zrealizujte živé talk-show vysielanie, kde sa externý hosť pripojí na diaľku cez VDO.ninja (WebRTC) bez ozveny (echa) v zvuku.", "color": "#FAEEDA", "tc": "#633806", "ic": "ti-broadcast", "criteria": CRIT, "checklist": ["Miestnosť vygenerovaná na vdo.ninja, odkaz pre hosťa poslaný", "Hosť pripojený cez smartfón, kamera aj mikrofón povolené", "Browser Source s URL hosťa pridaný v OBS (1920×1080)", "Audio hosťa smerované na Stopu 1 (Master stream)", "Mix-Minus nastavené — hosť nepočuje sám seba, echo neprítomné", "Split-screen kompozícia (moderátor + hosť) vytvorená orezaním"], "kw": ["VDO.ninja", "WebRTC", "Mix-Minus", "Browser Source", "split-screen"], "ref": "Miestnosť vytvorená na vdo.ninja (Create a Room) a odkaz poslaný hosťovi (Invite Guests); hosť na smartfóne povolí kameru a mikrofón; v OBS zdroj Prehliadač s URL hosťa (1920×1080) a zaškrtnutým „Ovládať zvuk cez OBS“; audio hosťa na Stope 1; Mix-Minus — hosť nepočuje sám seba (bez ozveny); split-screen vytvorený orezaním (Alt + ťahanie za okraj).", "tut": {"theory": "VDO.ninja je bezplatný nástroj postavený na technológii WebRTC, ktorý umožňuje nízko-latenčný prenos videa a zvuku priamo z prehliadača — ideálny pre vzdialených hostí bez potreby špeciálneho softvéru. Kľúčovým problémom je echo: ak hosť počuje spätne vlastný hlas s oneskorením, vzniká nepríjemná ozvena. Rieši sa technikou Mix-Minus — hosťovi sa posiela späť zvuk štúdia mínus jeho vlastný hlas.", "imgs": [{"src": "./img/cv10-1.jpg", "cap": "Schéma 10.1 — Prepojenie hosťa cez VDO.ninja server (WebRTC) do OBS PC s technikou Mix-Minus audio."}], "steps": ["Otvorte vdo.ninja, kliknite Create a Room a pomenujte miestnosť.", "Pošlite hosťovi odkaz (Invite Guests); hosť ho otvorí na smartfóne, povolí kameru/mikrofón a stlačí Start.", "Skopírujte Browser Source URL hosťa a v OBS pridajte zdroj Prehliadač s týmto URL (1920×1080), zaškrtnite „Ovládať zvuk cez OBS“.", "V mixéri zvuku nastavte novú stopu Browser zdroja na Stopu 1 (Master).", "Nastavte Mix-Minus — vypnite vlastnú stopu hosťa z monitoringu do virtuálneho kábla, aby nepočul sám seba.", "Vytvorte scénu split-screen — orežte (Alt + ťahanie za okraj) a umiestnite vedľa seba moderátora a okno hosťa."], "page": 22, "chapter": 10}}
+];
+const AVC=[{bg:"#EEEDFE",tc:"#3C3489"},{bg:"#E1F5EE",tc:"#085041"},{bg:"#E6F1FB",tc:"#0C447C"},{bg:"#FAEEDA",tc:"#633806"},{bg:"#FBEAF0",tc:"#72243E"},{bg:"#EAF3DE",tc:"#27500A"}];
+const GBG=['','#EAF3DE','#E6F1FB','#FAEEDA','#FAECE7','#FCEBEB'];
+const GTC=['','#27500A','#0C447C','#633806','#712B13','#791F1F'];
+const GL=['','Výborný','Chválitebný','Dobrý','Dostatočný','Nedostatočný'];
+
+// Selfcheck: v tímovom režime pribudne položka o rozdelení rolí. Cvičenie 9 ju má vo vlastnom
+// znení priamo v zozname (ownTeamItem), preto sa tam nepridáva druhá.
+const TEAM_CK='Úlohy v tíme rozdelené podľa rolí a v komentári je uvedené, kto čo urobil';
+function ckItems(ex,isTeam){return isTeam&&!ex.ownTeamItem?ex.checklist.concat([TEAM_CK]):ex.checklist;}
+function ckCount(ex,isTeam,ck){return ckItems(ex,isTeam).reduce((n,_,i)=>n+(ck&&ck[i]?1:0),0);}
+
+const LS_KEY='obslabState';
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(raw){const parsed=JSON.parse(raw);return Object.assign({sel:null,mode:{},members:{},checked:{},uploads:{},comment:{},link:{},subs:[],result:null,tutOpen:{}},parsed,{result:null,members:{},uploads:{},cfg:null});}
+  }catch(e){console.warn('Nepodarilo sa načítať uložený stav:',e);}
+  return {sel:null,mode:{},members:{},checked:{},uploads:{},comment:{},link:{},subs:[],result:null,tutOpen:{},cfg:null};
+}
+let S=loadState();
+function persist(){
+  try{
+    // Priložené súbory (obrázky v base64) sa neukladajú — zaplnili by localStorage a stratili by sa komentáre.
+    const toSave={mode:S.mode,checked:S.checked,comment:S.comment,link:S.link,subs:S.subs,tutOpen:S.tutOpen,code:S.code||''};
+    localStorage.setItem(LS_KEY,JSON.stringify(toSave));
+  }catch(e){console.warn('Nepodarilo sa uložiť stav (localStorage plné alebo nedostupné):',e);}
+}
+
+function ini(n){const p=(n||'??').trim().split(/\s+/);return p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(n||'??').slice(0,2).toUpperCase()}
+function av(n,i){const c=AVC[i%AVC.length];return`<div class="avatar" style="background:${c.bg};color:${c.tc};" title="${n}">${ini(n)}</div>`}
+
+function renderSidebar(){
+  const el=document.getElementById('sidebar');if(!el)return;
+  el.innerHTML=EX.map(ex=>{
+    const sel=S.sel===ex.id?'sel':'';
+    const last=S.subs.filter(s=>s.exId===ex.id).slice(-1)[0];
+    const gb=last?`<span class="badge" style="background:${GBG[last.grade]};color:${GTC[last.grade]};font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500;">Zn. ${last.grade}</span>`:'';
+    const tb=ex.team?`<span class="badge bt">${ex.defMode==='team'?'tím / solo':'solo / tím'}</span>`:`<span class="badge bs">solo</span>`;
+    return`<div class="ex-item ${sel}" onclick="selEx(${ex.id})">
+      <div class="ex-dot" style="background:${ex.color};color:${ex.tc};"><i class="ti ${ex.ic}" style="font-size:13px;" aria-hidden="true"></i></div>
+      <div class="ex-info">
+        <div class="ex-num">Cvičenie ${ex.id}</div>
+        <div class="ex-name">${ex.short}</div>
+        <div class="ex-badges">${tb}${gb}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selEx(id){
+  S.sel=id;
+  const ex=EX.find(e=>e.id===id);
+  if(!S.mode[id])S.mode[id]=ex.team?(ex.defMode||'team'):'solo';
+  if(!S.members[id])S.members[id]=(ex.team&&S.mode[id]==='team')?ex.roles.map(r=>({sid:'',role:r})):[{sid:'',role:''}];
+  if(!S.checked[id])S.checked[id]={};
+  if(!S.uploads[id])S.uploads[id]=[];
+  S.result=S.subs.filter(s=>s.exId===id).slice(-1)[0]||null;
+  renderSidebar();renderMain();
+}
+
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// Aktívna trieda a zoznam mien (verejné, bez hesla)
+// Žiak zadá KÓD TRIEDY od učiteľa; server vráti zoznam mien len jeho triedy.
+function normCode(v){return String(v||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,12);}
+async function loadConfig(){
+  const code=normCode(S.code);
+  if(!code){S.cfg={ok:false,reason:'need_code'};if(S.sel)renderMain();return;}
+  try{const r=await fetch('/api/config?code='+encodeURIComponent(code),{cache:'no-store'});S.cfg=await r.json();}
+  catch(e){S.cfg={ok:false,reason:'offline'};}
+  if(S.cfg&&S.cfg.reason==='bad_code'){S.code='';persist();}   // neplatný kód sa nezapamätá
+  if(S.sel)renderMain();
+}
+function submitCode(){
+  const el=document.getElementById('code-in');
+  const c=normCode(el?el.value:'');
+  if(c.length<4){alert('Zadaj kód triedy, ktorý ti dal učiteľ.');return;}
+  S.code=c;S.members={};S.cfg=null;persist();if(S.sel)selEx(S.sel);else renderMain();loadConfig();
+}
+function changeClass(){
+  S.code='';S.members={};S.subs=[];S.result=null;S.cfg={ok:false,reason:'need_code'};persist();
+  if(S.sel)selEx(S.sel);else{renderSidebar();renderMain();}
+}
+function studentById(sid){return (S.cfg&&S.cfg.cls?S.cfg.cls.students:[]).find(s=>s.id===sid)||null;}
+function cfgBannerHtml(){
+  if(!S.cfg)return`<div class="infobanner ib-purple"><div class="infobanner-icon"><i class="ti ti-loader" aria-hidden="true"></i></div><div class="infobanner-body">Načítavam zoznam triedy…</div></div>`;
+  if(S.cfg.ok)return`<div style="font-size:12.5px;color:var(--color-text-secondary);margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><i class="ti ti-school" aria-hidden="true"></i> Trieda: <strong>${esc(S.cfg.cls.name)}</strong> <button type="button" class="btn-s" style="padding:3px 10px;font-size:12px;" onclick="changeClass()">Zmeniť triedu</button></div>`;
+  if(S.cfg.reason==='need_code'||S.cfg.reason==='bad_code'){
+    const err=S.cfg.reason==='bad_code'?'<div style="color:#b3261e;font-size:12.5px;margin-bottom:6px;">Tento kód triedy nesedí. Skontroluj ho a skús znova.</div>':'';
+    return`<div class="infobanner ib-purple"><div class="infobanner-icon"><i class="ti ti-key" aria-hidden="true"></i></div><div class="infobanner-body"><strong>Zadaj kód svojej triedy</strong> (dá ti ho učiteľ). Potom sa ti zobrazí zoznam tvojej triedy.${err}<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;"><input type="text" id="code-in" maxlength="12" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="napr. K7M2QX" style="max-width:170px;text-transform:uppercase;letter-spacing:2px;" onkeydown="if(event.key==='Enter')submitCode()"><button type="button" class="btn-p" style="padding:8px 16px;font-size:13px;" onclick="submitCode()">Potvrdiť</button></div></div></div>`;
+  }
+  const msg=S.cfg.reason==='no_class'?'Učiteľ zatiaľ nenastavil triedu — odovzdávanie bude možné, až keď ju vytvorí.'
+    :S.cfg.reason==='no_db'?'Server nemá pripojenú databázu — odovzdanie sa neuloží u učiteľa. Povedz to učiteľovi.'
+    :'Nepodarilo sa načítať zoznam triedy. Skontroluj pripojenie a obnov stránku.';
+  return`<div class="infobanner ib-amber"><div class="infobanner-icon"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div><div class="infobanner-body">${msg}</div></div>`;
+}
+// <option>y zo zoznamu triedy; žiaci vybraní v iných riadkoch tímu sa nenaponúkajú
+function rosterOptionsHtml(sel,taken){
+  const list=S.cfg&&S.cfg.cls?S.cfg.cls.students:[];
+  if(!list.length)return'<option value="">— zoznam triedy nie je k dispozícii —</option>';
+  return'<option value="">— vyber žiaka zo zoznamu —</option>'+list.filter(s=>s.id===sel||!(taken||[]).includes(s.id)).map(s=>`<option value="${s.id}" ${s.id===sel?'selected':''}>${esc(s.name)}</option>`).join('');
+}
+function setSid(id,i,v){updM(id,i,'sid',v);renderMain();}
+function saveNoteHtml(status){
+  if(status==='saved')return'<div class="save-note sn-ok"><i class="ti ti-circle-check"></i> Odovzdanie je uložené u učiteľa. Nemusíš nič sťahovať ani posielať.</div>';
+  if(status==='pending')return'<div class="save-note sn-warn"><i class="ti ti-clock"></i> AI sa nepodarilo vyhodnotiť, ale tvoje odovzdanie je zaznamenané — známku určí učiteľ. Hodnotenie vyššie je len orientačný odhad.</div>';
+  if(status==='nodb')return'<div class="save-note sn-warn"><i class="ti ti-alert-triangle"></i> Server nemá pripojenú databázu, preto sa odovzdanie u učiteľa neuložilo. Oznám to učiteľovi.</div>';
+  return'<div class="save-note sn-bad"><i class="ti ti-alert-circle"></i> Odovzdanie sa nepodarilo uložiť. Hodnotenie vyššie je len orientačný odhad — skús odoslať znova.</div>';
+}
+
+
+function renderMain(){
+  const ex=EX.find(e=>e.id===S.sel);
+  if(!ex){document.getElementById('main-area').innerHTML=`<div class="hint-box"><i class="ti ti-hand-click" aria-hidden="true"></i>Vyber cvičenie zo zoznamu</div>`;return;}
+  const mode=S.mode[ex.id];const isTeam=mode==='team';
+  const mbrs=S.members[ex.id]||[];
+  const ck=S.checked[ex.id]||{};
+  const items=ckItems(ex,isTeam);
+  const ckN=ckCount(ex,isTeam,ck);
+  const ckT=items.length;
+  const pct=Math.round(ckN/ckT*100);
+
+  const prev=S.subs.filter(s=>s.exId===ex.id);
+  let prevH='';
+  if(prev.length>0){const l=prev[prev.length-1];prevH=`<div class="infobanner ib-purple" style="margin-bottom:1rem;"><div class="infobanner-icon"><i class="ti ti-history" aria-hidden="true"></i></div><div class="infobanner-body"><strong>${prev.length}× odovzdané</strong> · Posledná zn.: <strong>${l.grade} – ${GL[l.grade]}</strong> (${l.total} bodov)</div></div>`;}
+
+  const ciCards=ex.criteria.map(c=>`<div class="ci-card" style="background:${ex.color};border-color:transparent;"><div class="ci-name" style="color:${ex.tc};">${c.n}</div><div class="ci-pts" style="color:${ex.tc};">max ${c.m} b.</div></div>`).join('');
+
+  const tutOpen=S.tutOpen&&S.tutOpen[ex.id];
+  const tutH=ex.tut?`<div class="tut-wrap">
+    <button class="tut-toggle ${tutOpen?'open':''}" onclick="togTut(${ex.id})">
+      <i class="ti ti-book-2" style="font-size:15px;color:#534AB7;" aria-hidden="true"></i>
+      <span class="tut-toggle-title">Tutoriál k tomuto cvičeniu — teória a postup</span>
+      <i class="ti ti-chevron-right chev" aria-hidden="true"></i>
+    </button>
+    <div class="tut-body ${tutOpen?'open':''}">
+      <div class="tut-theory">${ex.tut.theory}</div>
+      ${(ex.tut.imgs||[]).map(im=>`<div class="tut-img-wrap"><img src="${im.src}" alt="${esc(im.cap||'')}" class="tut-img" loading="lazy"><div class="tut-img-cap">${im.cap||''}</div></div>`).join('')}
+      <div class="tut-steps">${ex.tut.steps.map((s,i)=>`<div class="tut-step"><span class="tut-step-n">${ex.id}.${i+1}</span><span>${s}</span></div>`).join('')}</div>
+      <div class="tut-links">
+        ${ex.tut.page?`<a class="tut-book-link" href="${BOOK}#page=${ex.tut.page}" target="_blank" rel="noopener"><i class="ti ti-book-2" style="font-size:13px;" aria-hidden="true"></i>Podrobný výklad — Cvičenie ${ex.tut.chapter} v učebnici (str. ${ex.tut.page}) →</a>`:''}
+        <a class="tut-book-link" href="${BOOK}#page=${BOOK_PAGES.glossary}" target="_blank" rel="noopener"><i class="ti ti-abc" style="font-size:13px;" aria-hidden="true"></i>Slovník pojmov (str. ${BOOK_PAGES.glossary}) →</a>
+        <a class="tut-book-link" href="${BOOK}" target="_blank" rel="noopener"><i class="ti ti-book" style="font-size:13px;" aria-hidden="true"></i>Celá učebnica (PDF) →</a>
+      </div>
+    </div>
+  </div>`:'';
+
+  const modeSection=ex.team?`<div class="mode-toggle">
+    <button class="mode-btn ${mode==='team'?'sel-team':''}" onclick="setMode(${ex.id},'team')">
+      <div class="mode-icon-wrap"><i class="ti ti-users" style="font-size:17px;" aria-hidden="true"></i></div>
+      <div><div class="mode-txt">Tímové</div><div class="mode-sub">2–4 členovia, odporúčané 3</div></div>
+    </button>
+    <button class="mode-btn ${mode==='solo'?'sel-solo':''}" onclick="setMode(${ex.id},'solo')">
+      <div class="mode-icon-wrap"><i class="ti ti-user" style="font-size:17px;" aria-hidden="true"></i></div>
+      <div><div class="mode-txt">Individuálne</div><div class="mode-sub">samostatná práca</div></div>
+    </button>
+  </div>`:`<div class="infobanner ib-purple" style="margin-bottom:1rem;"><div class="infobanner-icon"><i class="ti ti-user" aria-hidden="true"></i></div><div class="infobanner-body"><strong>Individuálne cvičenie</strong> – vypracovávaš samostatne</div></div>`;
+
+  const planH=(isTeam&&ex.plan)?`<div class="team-plan">
+    <div class="team-plan-h"><i class="ti ti-users" aria-hidden="true"></i>Rozdelenie úloh v tíme — odporúčané roly</div>
+    ${ex.plan.map(p=>`<div class="team-plan-row"><span class="team-plan-role">${esc(p.r)}</span><span class="team-plan-task">${esc(p.t)}</span></div>`).join('')}
+    <div class="team-plan-note">Tím má 2 až 4 členov. Odovzdať stačí jednému — odovzdanie sa započíta všetkým členom. V komentári uveďte, kto čo urobil.</div>
+  </div>`:'';
+
+  let membersH='';
+  const takenSids=mbrs.map(m=>m.sid).filter(Boolean);
+  if(isTeam){
+    const rows=mbrs.map((m,i)=>`<div class="mrow">
+      <select class="mrow-name" onchange="setSid(${ex.id},${i},this.value)">${rosterOptionsHtml(m.sid,takenSids)}</select>
+      <select onchange="updM(${ex.id},${i},'role',this.value)" style="width:135px;">
+        ${(ex.roles||[]).map(r=>`<option ${m.role===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+      <button class="mrm" onclick="rmM(${ex.id},${i})" aria-label="Odstrániť">&times;</button>
+    </div>`).join('');
+    membersH=`<div class="field"><div class="field-label"><i class="ti ti-users" style="font-size:12px;" aria-hidden="true"></i>Členovia tímu — vyber mená zo zoznamu</div>
+      <div class="members-grid">${rows}</div>
+      <button class="add-m" onclick="addM(${ex.id})"><i class="ti ti-plus" style="font-size:13px;" aria-hidden="true"></i>Pridať člena tímu</button>
+    </div>`;
+  } else {
+    membersH=`<div class="field"><div class="field-label"><i class="ti ti-user" style="font-size:12px;" aria-hidden="true"></i>Kto si? Vyber svoje meno</div>
+      <select onchange="setSid(${ex.id},0,this.value)">${rosterOptionsHtml(mbrs[0]&&mbrs[0].sid,[])}</select>
+    </div>`;
+  }
+  membersH=cfgBannerHtml()+membersH;
+
+  const chkH=items.map((item,i)=>{const c=ck[i]?'ck':'';return`<div class="ck-item ${c}" onclick="togCk(${ex.id},${i})">
+    <input type="checkbox" ${ck[i]?'checked':''} onclick="event.stopPropagation();togCk(${ex.id},${i})" aria-label="${item}">
+    <span>${item}</span>
+  </div>`}).join('');
+
+  const chips=(S.uploads[ex.id]||[]).map((f,i)=>`<div class="chip" title="${fileKindLabel(f)}"><i class="ti ${f.kind==='image'?'ti-photo':'ti-file'}" style="font-size:12px;color:${f.kind==='image'?'#0F6E56':'#BA7517'};" aria-hidden="true"></i>${esc(f.name)} (${f.size})<span class="chip-x" onclick="rmF(${ex.id},${i})" aria-label="Odstrániť">&times;</span></div>`).join('');
+
+  const kw=ex.kw.slice(0,6).map(k=>`<span class="kw-pill">${k}</span>`).join('');
+
+  document.getElementById('main-area').innerHTML=`<div class="form-card fi">
+    <div class="form-hero-band">
+      <div class="form-hero-inner">
+        <div class="fh-tag"><i class="ti ${ex.ic}" style="font-size:13px;" aria-hidden="true"></i>Cvičenie ${ex.id} · ${ex.team?'individuálne alebo tímové':'individuálne'}</div>
+        <div class="fh-title">${ex.title}</div>
+        <div class="fh-goal">${isTeam&&ex.goalTeam?ex.goalTeam:ex.goal}</div>
+        <div class="fh-kw">${kw}</div>
+      </div>
+    </div>
+    <div class="form-body">
+      ${prevH}
+      <div class="slab" style="margin-bottom:8px;">Hodnotiace kritériá</div>
+      <div class="criteria-infographic">${ciCards}</div>
+      <div style="font-size:11.5px;color:var(--color-text-secondary);margin:-4px 0 12px;">Body → známka: 86–100 = 1, 70–85 = 2, 56–69 = 3, 40–55 = 4, 0–39 = 5. <a href="${BOOK}#page=${BOOK_PAGES.grading}" target="_blank" rel="noopener" style="color:#0C447C;">Hodnotiace kritériá v učebnici (str. ${BOOK_PAGES.grading})</a></div>
+      ${tutH}
+      ${modeSection}
+      ${planH}
+      ${membersH}
+      <div class="field">
+        <div class="field-label"><i class="ti ti-checkbox" style="font-size:12px;" aria-hidden="true"></i>Selfcheck - zoznam pred odovzdaním
+          <span style="margin-left:auto;font-size:11px;color:#534AB7;font-weight:500;">${ckN}/${ckT} splnených</span>
+        </div>
+        <div class="ck-progress"><div class="ck-bar-bg"><div class="ck-bar-fill" style="width:${pct}%;"></div></div><div class="ck-label">${pct}%</div></div>
+        <div class="checklist">${chkH}</div>
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-paperclip" style="font-size:12px;" aria-hidden="true"></i>Priložené súbory (screenshoty, náhľady, video)</div>
+        <div class="shot-req">
+          <div class="shot-req-h"><i class="ti ti-camera" aria-hidden="true"></i>Požiadavky na screenshoty, aby ich AI vedela reálne vyhodnotiť</div>
+          <ul>
+            <li><strong>Formát:</strong> .png, .jpg, .jpeg, .webp alebo .gif — <strong>nie .HEIC</strong> (bežné pri fotkách z iPhonu). Ak fotíš mobilom, over si formát .jpg, alebo radšej urob screenshot priamo na počítači.</li>
+            <li><strong>Počet a veľkosť:</strong> AI vyhodnotí najviac <strong>4 obrázky</strong> (každý do 15 MB — appka ho pred odoslaním automaticky zmenší). Ďalšie obrázky sa len zaznamenajú. Vyber tie, ktoré najlepšie dokazujú prácu.</li>
+            <li><strong>Ostrosť:</strong> žiadne rozmazané fotky obrazovky spod uhla — nastavenia (rozlíšenie, kodek, keyframes, hodnoty v paneloch) musia byť čitateľné.</li>
+            <li><strong>Čo má byť vidno pre toto cvičenie:</strong> ${ex.kw.slice(0,6).join(', ')}.</li>
+            <li>Videá (.mp4/.mov) a iné súbory AI obsahovo <strong>nevie</strong> prehrať — samotné videá nahraj na Google Drive. Tu sa zaznamená len názov súboru; rozhodujúci je aj konkrétny komentár nižšie.</li>
+          </ul>
+          <button type="button" class="shot-req-btn" onclick="openExample()"><i class="ti ti-scale" aria-hidden="true"></i>Zobraziť ukážku: zlé vs. dobré odovzdanie</button>
+        </div>
+        <div class="upload-zone" onclick="document.getElementById('file-input-${ex.id}').click()" role="button" tabindex="0" aria-label="Priložiť súbory">
+          <i class="ti ti-upload uz-icon" aria-hidden="true"></i>
+          <div class="uz-t">Klikni pre pridanie súborov</div>
+          <div class="uz-h">PNG · JPG · WEBP · GIF (screenshoty, max. 4 pre AI) · videá a iné súbory sa len zaznamenajú</div>
+          <input type="file" id="file-input-${ex.id}" multiple style="display:none;" onchange="handleFiles(${ex.id},this)">
+        </div>
+        ${chips?`<div class="chips">${chips}</div>`:''}
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-brand-google-drive" style="font-size:12px;" aria-hidden="true"></i>Odkaz na súbory na Google Drive <span style="font-weight:400;text-transform:none;letter-spacing:0;">(povinné)</span></div>
+        <input type="text" placeholder="https://drive.google.com/…" value="${esc(S.link[ex.id]||'')}" oninput="S.link[${ex.id}]=this.value;persist()">
+      </div>
+      <div class="field">
+        <div class="field-label"><i class="ti ti-notes" style="font-size:12px;" aria-hidden="true"></i>Komentár a popis postupu</div>
+        <textarea placeholder="Opíš čo ${isTeam?'ste robili':'si robil/a'}, aké problémy ${isTeam?'ste riešili':'si riešil/a'} a ako ste ich vyriešili. Použi odborné pojmy (${ex.kw.slice(0,3).join(', ')}...)." oninput="S.comment[${ex.id}]=this.value;persist()">${S.comment[ex.id]||''}</textarea>
+      </div>
+      <div class="btn-row">
+        <button class="btn-p" id="sbtn-${ex.id}" onclick="submitWork(${ex.id})"><i class="ti ti-send" style="font-size:13px;" aria-hidden="true"></i>Odovzdať a ohodnotiť</button>
+        <button class="btn-s" onclick="resetF(${ex.id})">Vymazať</button>
+      </div>
+      <div id="eval-${ex.id}"></div>
+    </div>
+  </div>`;
+  if(S.result&&S.result.exId===ex.id)setTimeout(()=>renderResult(S.result),50);
+}
+
+function setMode(id,m){if(S.mode[id]===m)return;S.mode[id]=m;const ex=EX.find(e=>e.id===id);const keep=(S.members[id]&&S.members[id][0]&&S.members[id][0].sid)||'';if(m==='team'){S.members[id]=ex.roles.map((r,i)=>({sid:i===0?keep:'',role:r}));}else{S.members[id]=[{sid:keep,role:''}];}persist();renderMain()}
+function updM(id,i,f,v){if(!S.members[id])S.members[id]=[];if(!S.members[id][i])S.members[id][i]={};S.members[id][i][f]=v;persist()}
+function addM(id){const ex=EX.find(e=>e.id===id);if(!S.members[id])S.members[id]=[];if(S.members[id].length>=4)return;S.members[id].push({sid:'',role:ex.roles[Math.min(S.members[id].length,ex.roles.length-1)]});persist();renderMain()}
+function rmM(id,i){if(S.members[id].length<=1)return;S.members[id].splice(i,1);persist();renderMain()}
+function togCk(id,i){S.checked[id][i]=!S.checked[id][i];persist();renderMain();renderSidebar()}
+function togTut(id){S.tutOpen[id]=!S.tutOpen[id];renderMain()}
+function openExample(){document.getElementById('example-modal').classList.add('active')}
+function closeExample(){document.getElementById('example-modal').classList.remove('active')}
+
+// ============================================================
+// Správa súborov — skutočné čítanie obrázkov (base64) na odoslanie AI
+// ============================================================
+const SUPPORTED_IMAGE_EXT=['png','jpg','jpeg','webp','gif'];
+const MAX_IMAGE_BYTES=15*1024*1024;   // pôvodný súbor; pred odoslaním sa zmenší
+const MAX_AI_IMAGES=4;                // max. počet obrázkov, ktoré uvidí AI
+const AI_IMG_EDGE=1400;               // dlhšia strana obrázka v px po zmenšení
+const AI_IMG_QUALITY=0.82;            // kvalita JPEG po zmenšení
+const MAX_PAYLOAD_CHARS=3_600_000;    // Vercel povoľuje telo požiadavky max. ~4,5 MB
+// Zmenší obrázok na max. AI_IMG_EDGE px a prevedie na JPEG (base64 bez hlavičky).
+// Výrazne znižuje vstupné tokeny aj veľkosť požiadavky; text na screenshotoch ostáva čitateľný.
+async function imageToJpegBase64(file,edge,q){
+  const bmp=await createImageBitmap(file);
+  const r=Math.min(1,edge/Math.max(bmp.width,bmp.height));
+  const w=Math.max(1,Math.round(bmp.width*r)),h=Math.max(1,Math.round(bmp.height*r));
+  const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+  const ctx=cv.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.drawImage(bmp,0,0,w,h);
+  if(bmp.close)bmp.close();
+  return cv.toDataURL('image/jpeg',q).split(',')[1];
+}
+function fileKindLabel(f){
+  switch(f.kind){
+    case 'image': return 'obrázok — AI ho reálne uvidí';
+    case 'image-extra': return 'nad limit 4 obrázkov — AI ho neuvidí, zaznamená sa len názov';
+    case 'heic-unsupported': return 'HEIC nie je podporovaný — prekonvertuj na JPG/PNG';
+    case 'image-too-large': return 'obrázok je príliš veľký (nad 15 MB) — zmenši ho';
+    case 'unreadable': return 'súbor sa nepodarilo načítať';
+    default: return 'video/iný súbor — obsah sa neanalyzuje, len sa zaznamená názov';
+  }
+}
+async function handleFiles(id,input){
+  if(!input.files.length)return;
+  const incoming=Array.from(input.files);
+  input.value='';
+  if(!S.uploads[id])S.uploads[id]=[];
+  for(const f of incoming){
+    const ext=(f.name.split('.').pop()||'').toLowerCase();
+    const sizeStr=(f.size/(1024*1024)).toFixed(2)+' MB';
+    const isSupportedImg=SUPPORTED_IMAGE_EXT.includes(ext);
+    const isHeic=ext==='heic'||ext==='heif';
+    const nImg=S.uploads[id].filter(x=>x.kind==='image').length;
+    if(isSupportedImg&&f.size<=MAX_IMAGE_BYTES){
+      if(nImg>=MAX_AI_IMAGES){S.uploads[id].push({name:f.name,size:sizeStr,kind:'image-extra'});continue;}
+      try{
+        const base64=await imageToJpegBase64(f,AI_IMG_EDGE,AI_IMG_QUALITY);
+        S.uploads[id].push({name:f.name,size:sizeStr,kind:'image',mime:'image/jpeg',base64});
+      }catch(e){S.uploads[id].push({name:f.name,size:sizeStr,kind:'unreadable'});}
+    }else if(isHeic){
+      S.uploads[id].push({name:f.name,size:sizeStr,kind:'heic-unsupported'});
+    }else if(isSupportedImg){
+      S.uploads[id].push({name:f.name,size:sizeStr,kind:'image-too-large'});
+    }else{
+      S.uploads[id].push({name:f.name,size:sizeStr,kind:'unanalyzable'});
+    }
+  }
+  renderMain();
+}
+function rmF(id,i){S.uploads[id].splice(i,1);persist();renderMain()}
+function resetF(id){S.checked[id]={};S.uploads[id]=[];S.comment[id]='';S.link[id]='';S.result=null;persist();renderMain()}
+
+function evidenceFallback(ex,ckN,ups,comment,ckT){
+  const totalChecks=ckT||ex.checklist.length;
+  const rawPct=Math.round((ckN/totalChecks)*100);
+  const hasImage=ups.some(f=>f.kind==='image');
+  const hasAnyFile=ups.length>0;
+  const hasDetailedComment=!!comment&&comment.trim().length>=60;
+  const hasSomeComment=!!comment&&comment.trim().length>=15;
+  // POZOR: toto je len lokálny núdzový odhad, spúšťa sa keď /api/evaluate nie je dostupné
+  // (napr. index.html otvorený priamo ako súbor, bez servera). Nevie a nikdy nemôže overiť,
+  // či priložený súbor a komentár SKUTOČNE súvisia so zadaním — iba že existujú a majú
+  // dostatočnú dĺžku. Preto je zámerne prísny a konzervatívny, aj pri "plnom" dôkaze.
+  let factor;
+  if(hasImage&&hasDetailedComment)factor=0.5;
+  else if(hasImage||hasDetailedComment)factor=0.3;
+  else if(hasSomeComment||hasAnyFile)factor=0.15;
+  else factor=0.05;
+  const total=Math.round(rawPct*factor);
+  const grade=Math.max(3,Math.min(5,6-Math.round(total/20)));
+  const summary=`Toto NIE JE overené AI hodnotenie — je to len lokálny núdzový odhad, ktorý sa spustil, pretože appka sa nevedela spojiť s /api/evaluate (napr. index.html bol otvorený priamo ako súbor, alebo Vercel deployment nemá nastavený API kľúč). Tento odhad iba overuje, či súbor/komentár EXISTUJE a má dostatočnú dĺžku — vôbec nekontroluje, či sa reálne vzťahuje na zadanie. Pre skutočné overenie obsahu je nutné appku spustiť cez nasadený Vercel s funkčným /api/evaluate.`;
+  return {
+    grade,total,criteria:{},
+    strengths: "Práca bola formálne odovzdaná do systému.",
+    improvements: "Over funkčnosť /api/evaluate (nasadenie na Vercel + ANTHROPIC_API_KEY), aby si dostal skutočné AI hodnotenie obsahu, nie len tento formálny odhad.",
+    summary
+  };
+}
+
+async function submitWork(id){
+  const ex=EX.find(e=>e.id===id);
+  const mode=S.mode[id];const isTeam=mode==='team';
+  const rows=(S.members[id]||[]).filter(m=>m.sid);
+  const sids=rows.map(m=>m.sid);
+  const mbrs=rows.map(m=>({name:(studentById(m.sid)||{}).name||'',role:m.role||''}));
+  const comment=S.comment[id]||'';
+  const ck=S.checked[id]||{};const items=ckItems(ex,isTeam);const ckN=ckCount(ex,isTeam,ck);
+  const ups=S.uploads[id]||[];
+  const names=mbrs.map(m=>m.name).join(', ')||'Anonymný';
+
+  if(!S.cfg||!S.cfg.cls){alert("Zoznam triedy nie je k dispozícii — odovzdať sa zatiaľ nedá. Obnov stránku, prípadne sa ozvi učiteľovi.");return;}
+  if(rows.length===0){alert("Vyber svoje meno (alebo mená členov tímu) zo zoznamu pred odovzdaním.");return;}
+  if(new Set(sids).size!==sids.length){alert("Rovnaký žiak je v tíme vybraný viackrát.");return;}
+  if(isTeam&&rows.length<2){alert("Pri tímovom odovzdaní vyber aspoň dvoch členov tímu — alebo prepni na individuálne.");return;}
+  if(!/^https:\/\/([a-z0-9-]+\.)*google\.com\//i.test((S.link[id]||'').trim())){alert("Vlož odkaz na svoje súbory na Google Drive (povinné) — začína https://drive.google.com/…");return;}
+  if(ups.length===0){alert("Musíš priložiť aspoň jeden súbor (napr. screenshot z OBS Studia, prípadne video) — bez neho sa práca nedá odovzdať. Samotné zaškrtnutie Selfchecku nie je dôkaz o vykonanej práci.");return;}
+  if(!comment||comment.trim().length<15){alert("Doplň, prosím, aspoň krátky komentár (min. cca 15 znakov) o tom, čo a ako si robil — inak AI nemá podľa čoho overiť, že Selfcheck zodpovedá realite.");return;}
+
+  const btn=document.getElementById(`sbtn-${id}`);if(btn)btn.disabled=true;
+  const evalEl=document.getElementById(`eval-${id}`);
+  if(evalEl)evalEl.innerHTML=`<div class="eval-load"><div class="spin"></div><span>AI hodnotí ${isTeam?'tímovú prácu':'individuálnu prácu'}…</span></div>`;
+
+  const imageFiles=ups.filter(f=>f.kind==='image');
+  const otherFiles=ups.filter(f=>f.kind!=='image');
+
+  // Systémový prompt je rozdelený na dva bloky kvôli Anthropic prompt cachingu:
+  // 1) spoločné pravidlá hodnotenia — identické pre všetky cvičenia aj odovzdania,
+  //    preto sa označujú cache_control (Anthropic si ich "zapamätá" na serveri
+  //    a pri ďalších requestoch sa už neúčtujú ako plný vstupný token náklad),
+  // 2) malý premenlivý blok — tímové/individuálne hodnotenie a JSON schéma
+  //    s kritériami konkrétneho cvičenia (mení sa cvičenie od cvičenia).
+  const sysCommon=`Si prísny, ale spravodlivý učiteľ odboru Multimédiá (živé vysielanie a video produkcia v programe OBS Studio) na strednej odbornej škole. Hodnotíš odovzdané cvičenie formatívne podľa pevnej rubriky. Zaškrtnutý Selfcheck je len tvrdenie žiaka, nie dôkaz — vysoké skóre nikdy nedáš iba na jeho základe.
+
+HODNOTIACE KRITÉRIÁ (rovnaké pre všetky cvičenia, spolu 100 b.):
+- tech (max 30): technická funkčnosť a stabilita — správne nastavenia a postup podľa zadania (filtre, scény, prechody, výstup, enkodér, sieť a pod.); stream a záznam bežia bez pádov a bez zahodených snímok (Dropped frames).
+- key (max 25): kľúčovanie, svietenie, kompozícia — čo je SKUTOČNE vidieť na priložených obrázkoch (čistota kľúčovania, svietenie, rámovanie záberu, rozloženie scény a vrstiev).
+- audio (max 20): práca s audiom — čistota zvuku, gain staging, absencia skreslenia a šumu; hodnoť len to, čo je doložené snímkou (mixér, filtre, úrovne) alebo konkrétnym komentárom.
+- doc (max 25): protokol a dokumentácia — pravdivosť Selfchecku, konkrétnosť komentára (presné hodnoty, názvy nastavení, kroky) a úplnosť a čitateľnosť priložených screenshotov.
+
+PRAVIDLÁ DÔKAZNOSTI:
+1. Položka Selfchecku získa vysoké body len vtedy, ak ju podporuje priložený obrázok (skutočne si ho pozri) ALEBO konkrétny komentár s presnými hodnotami, nastaveniami a krokmi. Samotné zaškrtnutie bez podloženia hodnoť v kritériu tech najviac na 40 % jeho maxima.
+2. Obrázky nasledujú v správe. Hodnoť len to, čo na nich naozaj vidíš. Obrázok, ktorý zjavne nesúvisí so zadaním, nepočítaj ako dôkaz a napíš to.
+3. Videá a iné súbory NEVIDÍŠ a zvuk NEPOČUJEŠ. Ak sú priložené iba také súbory, kritérium key nesmie presiahnuť 10 b. a v spätnej väzbe jasne uveď, že obsah videa nebol technicky overený.
+4. Kritérium audio hodnoť len podľa snímky mixéra, filtrov a úrovní alebo podľa konkrétneho komentára. Ak nič také nie je doložené, najviac 8 b. Ak cvičenie zvuk samo nerieši (napr. čisto vizuálne zadanie), hodnoť, či tím doložil aspoň základnú kontrolu úrovní; samotná absencia zvuku v zadaní nie je dôvod na nulu, ale vysoké skóre vyžaduje dôkaz.
+5. Nikdy si nevymýšľaj hodnoty, časy, rozlíšenia ani nastavenia, ktoré nie sú v komentári ani na obrázku. Referenčné údaje k cvičeniu slúžia len na overenie správnosti toho, čo žiak uviedol alebo ukázal — nepripisuj mu ich, ak ich nedoložil.
+6. Komentár, ktorý len prepisuje položky Selfchecku bez vlastných hodnôt, hodnoť v kritériu doc najviac 10 b.
+7. Čestne priznané nesplnené položky penalizuj len prirodzene (chýbajúci bod), nie navyše.
+8. Hodnoť presne a bez zaokrúhľovania nahor: „total“ je súčet štyroch kritérií. Známka zodpovedá bodom: 86–100 = 1, 70–85 = 2, 56–69 = 3, 40–55 = 4, 0–39 = 5.
+
+JAZYK A TÓN SPÄTNEJ VÄZBY (dôležité):
+- Píš výlučne spisovnou slovenčinou (nie češtinou) s úplnou diakritikou (ä, č, ď, ĺ, ľ, ň, ô, š, ť, ž). Pozor na české slová: používaj „ak“ (nie „pokud“), „tiež“ (nie „taky“), „predovšetkým“ (nie „především“), „ďalej“ (nie „dále“), „tu“ (nie „zde“), „napríklad“, „aby“, „pretože“.
+- Odborné slová píš po slovensky: záber, snímka obrazovky, súbor, priečinok, scéna, zdroj, vrstva, prechod, klávesová skratka, zahodené snímky, zvuková stopa, rozlíšenie. Názvy programov, funkcií a panelov nechaj v pôvodnom znení (OBS Studio, Chroma Key, Move Transition, Stinger, Lower Third, Noise Gate, Compressor, Limiter, NDI, Virtual Camera, VDO.ninja, Mix-Minus, Advanced Output).
+- Pri jednotlivcovi tykaj („máš“, „skús“, „doplň“), pri tíme vykaj v množnom čísle („máte“, „skúste“, „doplňte“). Vyhýbaj sa slovesným tvarom s rodovou koncovkou (napr. „urobil/a“) — formuluj bezrodovo („Podarilo sa ti…“, „V komentári chýba…“, „Práca obsahuje…“).
+- Čísla a jednotky: desatinná čiarka a medzera pred jednotkou alebo percentom („−2,0 dB“, „6000 kbps“, „80 %“); technické označenia nechaj tak, ako sú (CBR, CQP, MKV, 1920×1080).
+- Píš krátke, jasné vety. Tón podporujúceho kouča: pokojne a konkrétne pomenuj, čo je dobré, čo chýba a čo urobiť nabudúce — bez kapitálok, výkričníkov a dramatických slov. Aj pri slabej práci buď vecný a povzbudivý.
+- Pred odpoveďou si text potichu skontroluj (gramatika, y/i, mäkčene, dĺžne, české slová) a oprav ho.
+
+FORMÁT ODPOVEDE: výhradne jeden platný JSON objekt, bez backticks, bez textu pred ním alebo za ním, v jednom riadku:
+{"grade":2,"total":78,"criteria":{"tech":0,"key":0,"audio":0,"doc":0},"strengths":"...","improvements":"...","summary":"..."}
+- „criteria“ sú body z maxím tech 30, key 25, audio 20, doc 25.
+- „summary“: 1–2 vety (do 35 slov). „strengths“: 1–2 vety. „improvements“: 2–3 vety s konkrétnymi krokmi. Texty bez zalomení riadkov a bez rovných úvodzoviek (")  — na citáty použi „ “.`;
+
+  const teamPrompt=isTeam?`Ide o tímovú prácu — oslovuj tím vykaním v množnom čísle. Hodnotenie je spoločné pre celý tím, členov nehodnoť samostatne.
+Roly tímu pri tomto cvičení: ${(ex.plan||[]).map(p=>`${p.r} — ${p.t}`).join('; ')}.
+V kritériu doc zohľadni aj to, či komentár zachytáva, kto z tímu čo urobil, a či je rozdelenie úloh rozumné. Ak komentár rozdelenie úloh vôbec neuvádza, kritérium doc hodnoť najviac na 70 % jeho maxima. Kritériá tech, key a audio hodnoť podľa dôkazov rovnako ako pri jednotlivcovi.`:'';
+  const sysVariable=`${isTeam?teamPrompt:'Ide o individuálnu prácu — oslovuj žiaka tykaním a hodnoť samostatné zvládnutie postupu.'}
+Cvičenie ${ex.id}: ${ex.title}
+Referenčné údaje k tomuto cvičeniu (podľa učebnice; slúžia len na overenie správnosti): ${ex.ref}`;
+
+  const sys=[
+    {type:"text",text:sysCommon,cache_control:{type:"ephemeral"}},
+    {type:"text",text:sysVariable}
+  ];
+
+  const checklistText=`Cvičenie ${id}: ${ex.title}
+Zadanie: ${ex.goal}
+Typ: ${isTeam?`Tím (${mbrs.length} členov: ${mbrs.map(m=>m.name+(m.role?` (${m.role})`:'')).join(', ')})`:`Individuálne (${names})`}
+Selfcheck (POZOR: toto je len tvrdenie žiaka, nie overený fakt): ${ckN}/${items.length}
+${items.map((t,i)=>`${ck[i]?'✓ (tvrdí, že splnené)':'✗ (nesplnené)'} ${t}`).join('\n')}
+Priložené obrázky/screenshoty (${imageFiles.length}): ${imageFiles.length?imageFiles.map(f=>f.name).join(', ')+' — tieto obrázky nasledujú nižšie v správe, skutočne si ich pozri':'žiadne'}
+Priložené videá a iné neanalyzovateľné súbory (${otherFiles.length}): ${otherFiles.length?otherFiles.map(f=>`${f.name} [${fileKindLabel(f).split(' — ')[0]}]`).join(', '):'žiadne'} — obsah týchto súborov NEVIDÍŠ, hodnoť ich len ako formálny dôkaz existencie.
+Komentár žiaka: ${comment}
+
+Over, či je komentár a Selfcheck reálne podložený, a hodnoť presne podľa pravidiel v systémovej správe. Odpovedz po slovensky.`;
+
+  const userContent=[{type:"text",text:checklistText}];
+  imageFiles.forEach(f=>{
+    userContent.push({type:"image",source:{type:"base64",media_type:f.mime||"image/jpeg",data:f.base64}});
+  });
+
+  const roles={};if(isTeam)rows.forEach(m=>{if(m.role)roles[m.sid]=m.role;});
+  const meta={classId:S.cfg.cls.id,code:normCode(S.code),exId:id,members:sids,roles,ckN,ckT:items.length,fc:ups.length,comm:comment,link:(S.link[id]||'').trim()};
+  // Kontrola veľkosti požiadavky (Vercel: max. ~4,5 MB). Ak by bola väčšia, odošle sa menej obrázkov.
+  let imgSize=0;
+  for(let i=userContent.length-1;i>=1;i--){imgSize+=userContent[i].source.data.length;}
+  while(userContent.length>2&&imgSize+(comment||'').length>MAX_PAYLOAD_CHARS){imgSize-=userContent.pop().source.data.length;}
+  let saveStatus='failed';  // saved | nodb | pending | failed
+  let p;
+  try{
+    const r=await fetch("/api/evaluate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system:sys,messages:[{role:"user",content:userContent}],meta})});
+    if(!r.ok){
+      const eb=await r.json().catch(()=>({}));
+      if(r.status===400||r.status===409){
+        // chyba odovzdania (napr. zmenená trieda) — nehodnotiť lokálne, nech to žiak opraví
+        alert(eb.error||"Odovzdanie sa nepodarilo.");
+        if(btn)btn.disabled=false;if(evalEl)evalEl.innerHTML='';
+        if(r.status===409)loadConfig();
+        return;
+      }
+      if(eb.savedPending)saveStatus='pending';
+      throw new Error(`API error: ${r.status} ${eb.error||''} ${eb.reason||''}`.trim());
+    }
+    const d=await r.json();
+    if(!d.record)throw new Error('Chýba hodnotenie v odpovedi');
+    p=d.record;
+    saveStatus=d.saved?'saved':'nodb';
+  }catch(e){
+    console.warn('AI hodnotenie zlyhalo, používam lokálny fallback:',e);
+    p=evidenceFallback(ex,ckN,ups,comment,items.length);
+  }
+  saveR(id,p,names,mbrs,isTeam,ckN,ups.length,saveStatus);
+  if(btn)btn.disabled=false;
+}
+
+function saveR(id,p,names,mbrs,isTeam,ckN,fc,saveStatus){
+  const ex=EX.find(e=>e.id===id);
+  const res={exId:id,names,mbrs,isTeam,grade:Math.max(1,Math.min(5,parseInt(p.grade)||3)),total:Math.max(0,Math.min(100,parseInt(p.total)||0)),criteria:p.criteria||{},strengths:p.strengths||'',improvements:p.improvements||'',summary:p.summary||'',ckN,ckT:ckItems(ex,isTeam).length,fc,ts:new Date().toLocaleTimeString('sk-SK',{hour:'2-digit',minute:'2-digit'}),date:new Date().toLocaleDateString('sk-SK'),saveStatus};
+  S.subs.push(res);S.result=res;persist();renderResult(res);renderSidebar();
+}
+
+function renderResult(res){
+  const ex=EX.find(e=>e.id===res.exId);
+  const el=document.getElementById(`eval-${res.exId}`);if(!el)return;
+  const bars=ex.criteria.map(c=>{const sc=res.criteria[c.k]!==undefined?res.criteria[c.k]:Math.round((res.total/100)*c.m);const pct=Math.round((sc/c.m)*100);const col=pct>=75?'#1D9E75':pct>=50?'#534AB7':pct>=35?'#BA7517':'#E24B4A';return`<div class="crit-row"><div class="cl">${c.n}</div><div class="cb"><div class="cf" style="width:${pct}%;background:${col};"></div></div><div class="cn">${sc}/${c.m}</div></div>`}).join('');
+  const teamH=res.isTeam&&res.mbrs&&res.mbrs.length>0?`<div style="margin-bottom:10px;"><div class="rst" style="margin-bottom:5px;">Tím</div><div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center;">${res.mbrs.filter(m=>m.name).map((m,i)=>`${av(m.name,i)}<span style="font-size:12px;color:var(--color-text-secondary);margin-right:6px;">${esc(m.name)}${m.role?` <em style="color:var(--color-text-tertiary);">(${esc(m.role)})</em>`:''}</span>`).join('')}</div></div>`:'';
+  el.innerHTML=`<div class="result-wrap fi">
+    <div class="result-top">
+      <div class="gc g${res.grade}">${res.grade}</div>
+      <div class="rm"><h3>${GL[res.grade]} <span style="font-size:13px;font-weight:400;color:var(--color-text-secondary);">(${res.total} b.)</span></h3><p>${res.isTeam?`Tím: ${esc(res.names)}`:`Študent: ${esc(res.names)}`} · Selfcheck ${res.ckN}/${res.ckT} · ${res.fc} súborov · ${res.ts}</p></div>
+    </div>
+    <div class="rb">
+      ${teamH}
+      <div class="rs"><div class="rst">Hodnotiace kritériá</div>${bars}</div>
+      <div class="rs"><div class="rst">Zhrnutie</div><p>${esc(res.summary)}</p></div>
+      <div class="rs rs-g"><div class="rst">Silné stránky</div><p>${esc(res.strengths)}</p></div>
+      <div class="rs rs-r"><div class="rst">Na zlepšenie</div><p>${esc(res.improvements)}</p></div>
+      ${saveNoteHtml(res.saveStatus)}
+    </div>
+  </div>`;
+}
+
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',['student','teacher','overview'][i]===t));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+t).classList.add('active');
+  if(t==='teacher')renderTeacher();
+  if(t==='overview')renderOverview();
+}
+
+// ============================================================
+// Učiteľský prehľad — tabuľka žiakov × cvičení (dáta z databázy cez /api/teacher)
+// ============================================================
+function slugify(s){
+  return (s||'trieda').toString().trim().toLowerCase()
+    .replace(/[áäà]/g,'a').replace(/[čć]/g,'c').replace(/[ď]/g,'d').replace(/[éě]/g,'e')
+    .replace(/[íî]/g,'i').replace(/[ľĺ]/g,'l').replace(/[ňń]/g,'n').replace(/[óô]/g,'o')
+    .replace(/[ŕř]/g,'r').replace(/[šś]/g,'s').replace(/[ťţ]/g,'t').replace(/[úůü]/g,'u')
+    .replace(/[ýÿ]/g,'y').replace(/[žź]/g,'z').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')||'trieda';
+}
+
+let T={pw:sessionStorage.getItem('tp')||'',data:null,err:'',loading:false,classId:''};
+
+async function tApi(action,payload){
+  const r=await fetch('/api/teacher',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action,password:T.pw,...(payload||{})})});
+  const d=await r.json().catch(()=>({}));
+  if(r.status===401){T.pw='';T.data=null;sessionStorage.removeItem('tp');throw new Error(d.error||'Nesprávne heslo.');}
+  if(!r.ok)throw new Error(d.error||('Chyba servera '+r.status));
+  return d;
+}
+
+async function teacherLogin(){
+  const v=document.getElementById('t-pw')?.value||'';
+  if(!v)return;
+  T.pw=v;T.err='';
+  try{await tApi('check');sessionStorage.setItem('tp',T.pw);await loadTeacher();}
+  catch(e){T.err=e.message;T.pw='';renderTeacher();}
+}
+
+function teacherLogout(){
+  T={pw:'',data:null,err:'',loading:false,classId:''};
+  sessionStorage.removeItem('tp');
+  renderTeacher();renderOverview();
+}
+
+async function loadTeacher(classId){
+  T.loading=true;T.err='';
+  if(classId!==undefined)T.classId=classId;
+  renderTeacher();
+  try{
+    T.data=await tApi('overview',T.classId?{classId:T.classId}:{});
+    if(T.data.cls)T.classId=T.data.cls.id;
+  }catch(e){T.err=e.message;}
+  T.loading=false;
+  renderTeacher();renderOverview();
+}
+
+function bestAttempt(rec){
+  const g=(rec.attempts||[]).filter(a=>!a.pending);
+  if(!g.length)return null;
+  return g.reduce((b,a)=>(a.total>b.total?a:b),g[0]);
+}
+
+function cellFor(sid,exId){
+  const d=T.data;
+  const ovr=d.ovr[sid+'|'+exId]||null;
+  const cands=d.subs.filter(s=>String(s.exId)===String(exId)&&s.members.includes(sid));
+  let best=null,bestRec=null;
+  cands.forEach(rec=>{const a=bestAttempt(rec);if(a&&(!best||a.total>best.total)){best=a;bestRec=rec;}});
+  let grade=null,total=null,state='none';
+  if(best){grade=best.grade;total=best.total;state='ok';}
+  else if(cands.length)state='pending';
+  if(ovr){grade=ovr.grade;state='ok';}
+  return{grade,total,state,ovr,cands,multi:cands.length>1,team:!!(bestRec&&bestRec.members.length>1)};
+}
+
+function studentsOf(cls){return cls.students.filter(s=>s.name);}
+
+function renderTeacher(){
+  const root=document.getElementById('t-root');if(!root)return;
+
+  if(!T.pw){
+    root.innerHTML=`<div class="t-login form-card" style="padding:22px;">
+      <div style="font-size:15px;font-weight:500;margin-bottom:4px;"><i class="ti ti-lock"></i> Učiteľský prehľad</div>
+      <div style="font-size:12.5px;color:var(--color-text-secondary);">Zadaj heslo učiteľa.</div>
+      <input type="password" id="t-pw" placeholder="Heslo" onkeydown="if(event.key==='Enter')teacherLogin()">
+      ${T.err?`<div class="save-note sn-bad">${esc(T.err)}</div>`:''}
+      <button class="btn-p" type="button" onclick="teacherLogin()" style="margin:8px auto 0;">Prihlásiť</button>
+    </div>`;
+    return;
+  }
+  if(!T.data){
+    if(!T.loading&&!T.err){loadTeacher();return;}
+    root.innerHTML=T.loading
+      ?'<div class="empty"><i class="ti ti-loader"></i>Načítavam…</div>'
+      :`<div class="t-login"><div class="save-note sn-bad">${esc(T.err)}</div><div style="display:flex;gap:8px;justify-content:center;margin-top:8px;"><button class="btn-s" type="button" onclick="T.err='';loadTeacher()">Skúsiť znova</button><button class="btn-s" type="button" onclick="teacherLogout()">Odhlásiť</button></div></div>`;
+    return;
+  }
+
+  const d=T.data;
+  const opts=d.classes.map(c=>`<option value="${c.id}" ${d.cls&&c.id===d.cls.id?'selected':''}>${esc(c.name)}${c.id===d.activeId?' ✓ aktívna':''} (${c.count})</option>`).join('');
+  const toolbar=`<div class="t-bar">
+      ${d.classes.length?`<select onchange="loadTeacher(this.value)">${opts}</select>`:''}
+      <button class="btn-s" type="button" onclick="loadTeacher()"><i class="ti ti-refresh"></i> Obnoviť</button>
+      <button class="btn-p" type="button" style="padding:9px 16px;font-size:13px;background:#0F6E56;" onclick="openHandbook()"><i class="ti ti-book-2"></i> Metodická príručka</button>
+      <button class="btn-p" type="button" style="padding:9px 16px;font-size:13px;" onclick="openClassDialog('new')"><i class="ti ti-users-plus"></i> Nová trieda</button>
+      ${d.cls?`<button class="btn-s" type="button" onclick="openClassDialog('edit')"><i class="ti ti-edit"></i> Upraviť zoznam</button>`:''}
+      ${d.cls&&d.cls.id!==d.activeId?`<button class="btn-s" type="button" onclick="setActiveClass()"><i class="ti ti-check"></i> Nastaviť ako aktívnu</button>`:''}
+      ${d.cls?`<button class="btn-s" type="button" onclick="exportCsv()"><i class="ti ti-file-spreadsheet"></i> Export do CSV</button>`:''}
+      <button class="btn-s" type="button" onclick="teacherLogout()"><i class="ti ti-logout"></i> Odhlásiť</button>
+    </div>
+    ${d.cls&&d.cls.code?`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 10px;font-size:13px;"><span><i class="ti ti-key"></i> Kód triedy pre žiakov:</span><strong style="font-size:18px;letter-spacing:3px;">${esc(d.cls.code)}</strong><button class="btn-s" type="button" onclick="copyCode()"><i class="ti ti-copy"></i> Kopírovať</button><button class="btn-s" type="button" onclick="newClassCode()"><i class="ti ti-refresh"></i> Nový kód</button></div>`:''}
+    ${T.err?`<div class="save-note sn-bad" style="margin-bottom:10px;">${esc(T.err)}</div>`:''}`;
+
+  if(!d.cls){
+    root.innerHTML=toolbar+`<div class="empty"><i class="ti ti-school"></i>Zatiaľ nie je vytvorená žiadna trieda.<br>Klikni na „Nová trieda“ a vlož zoznam žiakov.</div>`;
+    return;
+  }
+
+  const studs=studentsOf(d.cls);
+  let done=0,sumG=0;
+  const rows=studs.map((s,i)=>{
+    let myDone=0,mySum=0;
+    const tds=EX.map(ex=>{
+      const c=cellFor(s.id,ex.id);
+      let inner;
+      if(c.state==='ok'&&c.grade){
+        myDone++;mySum+=c.grade;done++;sumG+=c.grade;
+        const sub=[c.ovr?'✎':'',c.multi?'⚠':'',c.team?'👥':''].filter(Boolean).join(' ');
+        inner=`<span style="color:${GTC[c.grade]};">${c.grade}</span>${sub?`<span class="mx-sub">${sub}</span>`:''}`;
+      }else if(c.state==='pending'){inner='<span class="mx-pend">…</span>';}
+      else{inner='<span class="mx-none">–</span>';}
+      const tip=c.state==='ok'?`Známka ${c.grade}${c.total!=null?' · '+c.total+' b.':''}${c.ovr?' (ručne)':''}`:(c.state==='pending'?'Čaká na ručné hodnotenie':'Neodovzdané');
+      return`<td class="mx-c" title="${tip}" onclick="openCell('${s.id}',${ex.id})">${inner}</td>`;
+    }).join('');
+    const avg=myDone?(mySum/myDone).toFixed(1):'–';
+    return`<tr><td class="mx-n">${i+1}</td><td class="mx-name">${esc(s.name)}</td>${tds}<td class="mx-sum">${myDone}/${EX.length}</td><td class="mx-sum" style="color:var(--color-text-primary);">${avg}</td></tr>`;
+  }).join('');
+
+  const classAvg=done?(sumG/done).toFixed(1):'–';
+  const stats=`<div class="stat-grid">
+      <div class="stat"><div class="slbl">Žiaci v triede</div><div class="sval">${studs.length}</div></div>
+      <div class="stat"><div class="slbl">Vyplnené bunky</div><div class="sval">${done}<span style="font-size:13px;font-weight:400;"> / ${studs.length*EX.length}</span></div></div>
+      <div class="stat"><div class="slbl">Priemerná známka</div><div class="sval">${classAvg}</div></div>
+    </div>`;
+  const legend=`<div style="font-size:11.5px;color:var(--color-text-secondary);margin:-6px 0 14px;">Klikni na bunku pre detail, komentár žiaka a ručnú zmenu známky. &nbsp; ✎ ručne upravená &nbsp; ⚠ viac odovzdaní toho istého cvičenia &nbsp; 👥 tímová práca &nbsp; … čaká na ručné hodnotenie</div>`;
+  const heads=EX.map(ex=>`<th title="${esc(ex.short)}">${ex.id}</th>`).join('');
+  root.innerHTML=toolbar+stats+legend+`<div class="mx-wrap"><table class="mx">
+      <thead><tr><th>#</th><th style="text-align:left;">Žiak</th>${heads}<th>Hotovo</th><th>Priem.</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+}
+
+function openCell(sid,exId){
+  const d=T.data;
+  const s=d.cls.students.find(x=>x.id===sid);
+  const ex=EX.find(e=>String(e.id)===String(exId));
+  const c=cellFor(sid,exId);
+  const nameOf=id=>(d.cls.students.find(x=>x.id===id)||{}).name||id;
+  document.getElementById('d-title').innerText=`${s.name} — Cvičenie ${exId}`;
+
+  const subsHtml=c.cands.length?c.cands.map(rec=>{
+    const best=bestAttempt(rec);
+    const roles=[...rec.attempts].reverse().map(a=>a.roles).find(Boolean)||{};
+    const members=rec.members.map(id=>esc(nameOf(id))+(roles[id]?` <em style="color:var(--color-text-tertiary);">(${esc(roles[id])})</em>`:'')).join(', ');
+    const atts=[...rec.attempts].reverse().map(a=>`<div class="att-row"><span>${esc(a.date)} ${esc(a.time)}</span><span>${a.pending?'<em style="color:#BA7517;">čaká na ručné hodnotenie</em>'+(a.err?` <span style="color:#A32D2D;font-size:11px;">(${esc(a.err)})</span>`:''):`${a.total} b. · známka <strong style="color:${GTC[a.grade]};">${a.grade}</strong>`}</span></div>`).join('');
+    const bars=best?ex.criteria.map(cr=>{const sc=best.criteria&&best.criteria[cr.k]!==undefined?best.criteria[cr.k]:Math.round((best.total/100)*cr.m);const pct=Math.round((sc/cr.m)*100);const col=pct>=75?'#1D9E75':pct>=50?'#534AB7':pct>=35?'#BA7517':'#E24B4A';return`<div class="crit-row"><div class="cl">${esc(cr.n)}</div><div class="cb"><div class="cf" style="width:${pct}%;background:${col};"></div></div><div class="cn">${esc(sc)}/${cr.m}</div></div>`}).join(''):'';
+    const lastA=rec.attempts[rec.attempts.length-1];
+    const comm=(best&&best.comm)||(lastA&&lastA.comm)||'';
+    const link=[...rec.attempts].reverse().map(a=>a.link).find(Boolean);
+    return`<div class="cell-sub">
+      <div style="font-size:12.5px;margin-bottom:6px;"><strong>${rec.members.length>1?'Tím':'Samostatne'}:</strong> ${members}</div>
+      ${atts}
+      ${best?`<div class="rs" style="margin-top:10px;"><div class="rst">Zhrnutie AI (najlepší pokus)</div><p>${esc(best.summary)}</p></div>
+        <div class="rs"><div class="rst">Kritériá</div>${bars}</div>
+        <div class="rs rs-g"><div class="rst">Silné stránky</div><p>${esc(best.strengths)}</p></div>
+        <div class="rs rs-r"><div class="rst">Na zlepšenie</div><p>${esc(best.improvements)}</p></div>
+        <div style="font-size:12px;color:var(--color-text-secondary);">Splnené ${best.ckN}/${best.ckT} · súborov ${best.fc}</div>`:''}
+      ${comm?`<div class="rs" style="margin-top:8px;"><div class="rst">Komentár žiaka</div><p style="white-space:pre-wrap;">${esc(comm)}</p></div>`:''}
+      ${link?`<div style="font-size:13px;margin-top:6px;"><i class="ti ti-brand-google-drive"></i> <a href="${esc(link)}" target="_blank" rel="noopener noreferrer">Súbory na Google Drive</a></div>`:''}
+      <button type="button" class="btn-s" style="margin-top:8px;font-size:12px;padding:6px 12px;" onclick="deleteSub('${esc(rec.key)}')"><i class="ti ti-trash"></i> Zmazať toto odovzdanie</button>
+    </div>`;
+  }).join(''):'<div style="font-size:13px;color:var(--color-text-secondary);margin-bottom:10px;">Toto cvičenie zatiaľ nebolo odovzdané.</div>';
+
+  const cur=c.ovr?c.ovr.grade:'';
+  document.getElementById('d-body').innerHTML=`
+    <div style="font-size:13px;margin-bottom:10px;"><strong>Cvičenie:</strong> ${esc(ex.title)}</div>
+    ${subsHtml}
+    <div class="ovr-box">
+      <div class="rst">Ručná známka pre: ${esc(s.name)}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+        <select id="ovr-grade" style="width:auto;">
+          <option value="">— bez ručnej zmeny —</option>
+          ${[1,2,3,4,5].map(g=>`<option value="${g}" ${String(cur)===String(g)?'selected':''}>${g} – ${GL[g]}</option>`).join('')}
+        </select>
+        <input type="text" id="ovr-note" maxlength="300" placeholder="Poznámka (nepovinné)" value="${esc(c.ovr?c.ovr.note:'')}" style="flex:1;min-width:180px;">
+      </div>
+      <div style="font-size:11.5px;color:var(--color-text-secondary);margin:6px 0;">Platí len pre tohto žiaka (užitočné pri tímovej práci s nerovným podielom). Ručná známka má prednosť pred hodnotením AI.</div>
+      <button type="button" class="btn-p" style="padding:8px 16px;font-size:13px;" onclick="saveOverride('${sid}',${exId})"><i class="ti ti-device-floppy"></i> Uložiť</button>
+    </div>`;
+  document.getElementById('d-modal').classList.add('active');
+}
+
+async function saveOverride(sid,exId){
+  const g=document.getElementById('ovr-grade').value;
+  const note=document.getElementById('ovr-note').value;
+  try{
+    await tApi('override',{classId:T.data.cls.id,studentId:sid,exId:String(exId),grade:g===''?null:parseInt(g),note});
+    closeD();await loadTeacher();
+  }catch(e){alert(e.message);}
+}
+
+async function deleteSub(key){
+  if(!confirm('Naozaj zmazať toto odovzdanie (aj všetky pokusy)? Nedá sa vrátiť späť.'))return;
+  try{await tApi('deleteSubmission',{classId:T.data.cls.id,key});closeD();await loadTeacher();}
+  catch(e){alert(e.message);}
+}
+
+function closeD(){document.getElementById('d-modal').classList.remove('active');}
+
+let clsMode='new';
+function openClassDialog(mode){
+  clsMode=mode;
+  const edit=mode==='edit'&&T.data&&T.data.cls;
+  document.getElementById('cls-title').innerText=edit?'Upraviť zoznam žiakov':'Nová trieda';
+  document.getElementById('cls-name').value=edit?T.data.cls.name:'';
+  document.getElementById('cls-lines').value=edit?T.data.cls.students.map(s=>s.name).join('\n'):'';
+  document.getElementById('cls-active-wrap').style.display=edit?'none':'flex';
+  document.getElementById('cls-active').checked=true;
+  document.getElementById('cls-del').style.display=edit?'':'none';
+  document.getElementById('cls-hint').innerHTML=edit
+    ?'<strong>Poradie nemeň</strong> — odovzdania sú viazané na miesto v zozname. Meno môžeš opraviť, nového žiaka pridať na koniec; prázdny riadok = uvoľnené miesto.'
+    :'Tip: skopíruj stĺpec s menami z Excelu a vlož ho sem. Pre nový školský rok vytvor novú triedu — staré známky ostanú uložené v pôvodnej triede.';
+  updateClassCount();
+  document.getElementById('cls-modal').classList.add('active');
+}
+function closeClassDialog(){document.getElementById('cls-modal').classList.remove('active');}
+function classLines(){
+  const lines=document.getElementById('cls-lines').value.split(/\r?\n/).map(l=>l.trim());
+  while(lines.length&&!lines[lines.length-1])lines.pop();
+  return lines;
+}
+function updateClassCount(){document.getElementById('cls-count').innerText=`(${classLines().filter(Boolean).length} / 40)`;}
+
+async function saveClassDialog(){
+  const name=document.getElementById('cls-name').value.trim();
+  const lines=classLines();
+  if(!name){alert('Zadaj názov triedy.');return;}
+  if(!lines.filter(Boolean).length){alert('Vlož aspoň jedného žiaka.');return;}
+  if(lines.length>40){alert('Maximálne 40 žiakov.');return;}
+  try{
+    const payload={name,lines};
+    if(clsMode==='edit')payload.id=T.data.cls.id;else payload.setActive=document.getElementById('cls-active').checked;
+    const r=await tApi('saveClass',payload);
+    closeClassDialog();await loadTeacher(r.id);
+  }catch(e){alert(e.message);}
+}
+
+async function deleteClassDialog(){
+  const c=T.data.cls;
+  const pr=(T.data.projects||[]).join(', ');
+  if(!confirm(`Naozaj zmazať triedu „${c.name}“ vrátane všetkých známok${pr?' vo všetkých projektoch ('+pr+')':''}? Nedá sa vrátiť späť. Pred zmazaním si urob export do CSV.`))return;
+  try{await tApi('deleteClass',{classId:c.id});closeClassDialog();T.classId='';await loadTeacher('');}
+  catch(e){alert(e.message);}
+}
+
+function copyCode(){
+  const c=T.data&&T.data.cls&&T.data.cls.code;if(!c)return;
+  if(navigator.clipboard)navigator.clipboard.writeText(c).catch(()=>{});
+}
+async function newClassCode(){
+  if(!confirm('Vytvoriť nový kód triedy? Starý kód prestane platiť a žiaci budú musieť zadať nový.'))return;
+  try{await tApi('newCode',{classId:T.data.cls.id});await loadTeacher();}
+  catch(e){alert(e.message);}
+}
+async function setActiveClass(){
+  try{await tApi('setActive',{classId:T.data.cls.id});await loadTeacher();}
+  catch(e){alert(e.message);}
+}
+
+
+// ---- Metodická príručka (načíta sa zo servera až po overení hesla učiteľa)
+const HB_CSS=`.hb{font-size:13.5px;line-height:1.6;color:var(--color-text-primary)}
+.hb h1{font-size:22px;margin:0 0 4px}.hb h2{font-size:17px;margin:26px 0 8px;padding-bottom:4px;border-bottom:2px solid #AFA9EC}.hb h3{font-size:15px;margin:20px 0 6px}.hb h4{font-size:13.5px;margin:12px 0 4px}
+.hb p{margin:0 0 8px}.hb ul,.hb ol{margin:0 0 10px;padding-left:20px}.hb li{margin-bottom:3px}
+.hb table{border-collapse:collapse;width:100%;margin:6px 0 12px;font-size:12.5px}.hb th,.hb td{border:0.5px solid var(--color-border-secondary);padding:5px 8px;text-align:left;vertical-align:top}.hb th{background:#EEEDFE;color:#26215C}
+.hb .hb-box{border-left:4px solid #1D9E75;background:#E1F5EE;padding:8px 12px;border-radius:6px;margin:8px 0 12px}.hb .hb-warn{border-left-color:#BA7517;background:#FAEEDA}
+.hb .hb-ex{border:0.5px solid var(--color-border-tertiary);border-radius:10px;padding:4px 14px 8px;margin:10px 0 18px}
+.hb img{max-width:100%;height:auto;border-radius:8px;border:0.5px solid var(--color-border-tertiary)}.hb figcaption{font-size:11.5px;color:var(--color-text-secondary);margin:3px 0 12px}.hb figure{margin:8px 0}
+.hb a{color:#0C447C}`;
+let HB_HTML='';
+async function openHandbook(){
+  const m=document.getElementById('hb-modal'),b=document.getElementById('hb-body');
+  m.classList.add('active');
+  if(HB_HTML){b.innerHTML=HB_HTML;return;}
+  b.innerHTML='<div class="empty"><i class="ti ti-loader"></i>Načítavam…</div>';
+  try{const r=await tApi('handbook');HB_HTML=r.html||'';b.innerHTML=HB_HTML||'<p>Príručka nie je dostupná.</p>';}
+  catch(e){b.innerHTML='<div class="save-note sn-bad">'+esc(e.message)+'</div>';}
+}
+function closeHandbook(){document.getElementById('hb-modal').classList.remove('active');}
+function printHandbook(){
+  if(!HB_HTML)return;
+  const w=window.open('','_blank');
+  if(!w){alert('Prehliadač zablokoval nové okno. Povoľ vyskakovacie okná pre túto stránku.');return;}
+  w.document.write('<!doctype html><html lang="sk"><head><meta charset="utf-8"><base href="'+location.origin+'/"><title>OBS Lab — Metodická príručka</title><style>body{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:24px;color:#222}'+HB_CSS.replace(/var\(--color-[a-z-]+\)/g,'#999')+'@media print{.hb h2{break-after:avoid}.hb-ex,figure{break-inside:avoid}}</style></head><body><div class="hb">'+HB_HTML+'</div></body></html>');
+  w.document.close();
+  setTimeout(()=>{try{w.focus();w.print();}catch(e){}},600);
+}
+
+function exportCsv(){
+  const d=T.data;
+  const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+  const lines=[['Žiak',...EX.map(e=>'Cv. '+e.id),'Hotovo','Priemer'].map(q).join(';')];
+  studentsOf(d.cls).forEach(s=>{
+    const gs=EX.map(ex=>{const c=cellFor(s.id,ex.id);return c.state==='ok'&&c.grade?c.grade:'';});
+    const nums=gs.filter(x=>x!=='');
+    const avg=nums.length?(nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(2).replace('.',','):'';
+    lines.push([q(s.name),...gs,nums.length,avg].join(';'));
+  });
+  const blob=new Blob(['\ufeff'+lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`obslab_znamky_${slugify(d.cls.name)}.csv`;
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+}
+
+document.addEventListener('click',e=>{
+  if(e.target===document.getElementById('d-modal'))closeD();
+  if(e.target===document.getElementById('cls-modal'))closeClassDialog();
+});
+
+// ============================================================
+// Štatistiky cvičení
+// ============================================================
+function renderOverview(){
+  const statsEl=document.getElementById('ov-stats'),el=document.getElementById('ov-bars');
+  if(!statsEl||!el)return;
+  if(!T.pw||!T.data||!T.data.cls){
+    statsEl.innerHTML='';
+    el.innerHTML=`<div class="empty"><i class="ti ti-chart-bar" aria-hidden="true"></i>Štatistiky sa zobrazia po prihlásení v záložke „Učiteľský prehľad“.</div>`;
+    return;
+  }
+  const studs=studentsOf(T.data.cls);
+  let total=0;
+  const per=EX.map(ex=>{
+    const cells=studs.map(s=>cellFor(s.id,ex.id)).filter(c=>c.state==='ok'&&c.grade);
+    total+=cells.length;
+    const withPct=cells.filter(c=>c.total!=null);
+    return{ex,n:cells.length,avgG:cells.length?cells.reduce((a,c)=>a+c.grade,0)/cells.length:null,avgP:withPct.length?Math.round(withPct.reduce((a,c)=>a+c.total,0)/withPct.length):null};
+  });
+  statsEl.innerHTML=`<div class="stat"><div class="slbl">Žiaci</div><div class="sval">${studs.length}</div></div>
+    <div class="stat"><div class="slbl">Ohodnotených odovzdaní</div><div class="sval">${total}</div></div>`;
+  const dot=ex=>`<div class="ex-dot" style="background:${ex.color};color:${ex.tc};width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ${ex.ic}" style="font-size:12px;" aria-hidden="true"></i></div>`;
+  el.innerHTML=per.map(p=>{
+    if(!p.n)return`<div class="ov-row" style="opacity:.45;"><div class="ov-n">${p.ex.id}</div>${dot(p.ex)}<div class="ov-name">${p.ex.short}</div><span class="badge" style="background:var(--color-background-secondary);color:var(--color-text-secondary);font-size:10px;flex-shrink:0;">0 / ${studs.length}</span></div>`;
+    const g=Math.round(p.avgG);
+    return`<div class="ov-row"><div class="ov-n">${p.ex.id}</div>${dot(p.ex)}<div class="ov-name">${p.ex.short}</div><span class="badge bs" style="font-size:10px;flex-shrink:0;">${p.n} / ${studs.length}</span><div class="ov-bw"><div class="ov-bf" style="width:${p.avgP!=null?p.avgP:0}%;"></div></div><div class="ov-pts" style="color:${GTC[g]};width:auto;min-width:90px;">${p.avgP!=null?p.avgP+' b. · ':''}Ø ${p.avgG.toFixed(1)}</div></div>`;
+  }).join('');
+}
+
+loadConfig();
+renderSidebar();renderTeacher();renderOverview();
+</script>
+
+</body>
+</html>

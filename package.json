@@ -1,0 +1,10 @@
+{
+  "name": "obslab-ai-hodnotenie",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Odovzdávací systém pre 10 cvičení OBS Lab (živé vysielanie a video produkcia v OBS Studio) s AI hodnotením cez Anthropic API, ukladaním do databázy (Vercel serverless funkcie + Upstash Redis), kódom triedy a metodickou príručkou pre učiteľa.",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
