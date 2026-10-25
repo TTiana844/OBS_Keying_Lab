@@ -305,4 +305,3 @@ export default async function handler(req, res) {
     res.status(500).json({ error: "Nepodarilo sa spojiť s Anthropic API.", details: String(err), savedPending });
   }
 }
-
